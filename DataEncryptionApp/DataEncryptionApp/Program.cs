@@ -169,6 +169,36 @@ public class ConsoleUI : IUIHandler
     => Console.ReadLine();
 }
 
+public interface IDataEncryptionRepository
+{
+  IEnumerable<string> ReadFromFile(string filePath);
+  void EncryptToFile(string filePath, IEnumerable<string> plainTextBlocks);
+  void DecryptToFile(string filePath, IEnumerable<string> cipherTextBlocks);
+}
+
+public class DataEncryptionRepository(IDataEncryption dataEncryption, IStringsRepository stringsRepository) : IDataEncryptionRepository
+{
+  private readonly IDataEncryption _dataEncryption = dataEncryption;
+  private readonly IStringsRepository _stringsRepository = stringsRepository;
+
+  public IEnumerable<string> ReadFromFile(string filePath)
+    => _stringsRepository.Read(filePath);
+
+  public void EncryptToFile(string filePath, IEnumerable<string> plainTextBlocks)
+  {
+    var encryptedBlocks = plainTextBlocks.Select(_dataEncryption.Encrypt);
+    _stringsRepository.Write(filePath, encryptedBlocks);
+  }
+
+  public void DecryptToFile(string filePath, IEnumerable<string> cipherTextBlocks)
+  {
+    var decryptedBlocks = cipherTextBlocks.Select(_dataEncryption.Decrypt);
+    foreach (var block in decryptedBlocks)
+    {
+      _stringsRepository.Write(filePath, block);
+    }
+  }
+}
 
 public interface IDataEncryption
 {
