@@ -193,10 +193,16 @@ public class DataEncryptionRepository(IDataEncryption dataEncryption, IStringsRe
   public void DecryptToFile(string filePath, IEnumerable<string> cipherTextBlocks)
   {
     var decryptedBlocks = cipherTextBlocks.Select(_dataEncryption.Decrypt);
+    var appendedDecryptedBlocks = new List<string>();
+
     foreach (var block in decryptedBlocks)
     {
-      _stringsRepository.Write(filePath, block);
+      // Since Write of IStringsRepository overwrites the file, we need to append the blocks
+      appendedDecryptedBlocks.AddRange(block);
+      appendedDecryptedBlocks.Add(" "); // Separate blocks
     }
+
+    _stringsRepository.Write(filePath, appendedDecryptedBlocks);
   }
 }
 
@@ -297,11 +303,16 @@ public class CaesarEncryption(int numberOfShifts) : IDataEncryption
   {
     var results = new List<string>();
 
+    if (cipherText.Length == 0)
+    {
+      return results;
+    }
+
     for (int shift = 1; shift < 26; shift++)
     {
       var blockDecryptedMessage = cipherText
-          .Split(' ')
-          .Select(block => DecryptWithShift(block, shift));
+        .Split(' ')
+        .Select(block => DecryptWithShift(block, shift));
 
       results.Add(string.Join(" ", blockDecryptedMessage));
     }
