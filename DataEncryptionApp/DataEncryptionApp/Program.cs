@@ -2,7 +2,10 @@
 {
   var dataEncryption = new DataEncryptionApplication(
     new CaesarWithWhiteSpace(new CaesarEncryption(5)),
-    new TextualStringsRepository(),
+    new DataEncryptionRepository(
+      new CaesarWithWhiteSpace(new CaesarEncryption(5)),
+      new TextualStringsRepository()
+    ),
     new DataEncryptionUI(new ConsoleUI())
   );
 
@@ -13,20 +16,21 @@ catch (Exception ex)
   Console.WriteLine($"Some unexpected error occurred. Please try again {ex.Message}.");
 }
 
+Console.ReadLine();
+
 public class DataEncryptionApplication(
   IDataEncryption dataEncryption,
-  IStringsRepository stringsRepository,
+  IDataEncryptionRepository dataEncryptionRepository,
   DataEncryptionApplicationUI uiHandler)
 {
   private readonly IDataEncryption _dataEncryption = dataEncryption;
-  private readonly IStringsRepository _stringsRepository = stringsRepository;
+  private readonly IDataEncryptionRepository _dataEncryptionRepository = dataEncryptionRepository;
   private readonly DataEncryptionApplicationUI _uiHandler = uiHandler;
 
   public void Run()
   {
     bool isExit = false;
     _uiHandler.DisplayMessage("Welcome to Data Encryption Application!");
-
 
     while (!isExit)
     {
@@ -52,34 +56,58 @@ public class DataEncryptionApplication(
 
       if (userChoiceToEncryptOrDecrypt == "1")
       {
-        if (userChoiceToWriteOrRead == "1")
-        {
-          _uiHandler.DisplayMessage("Please enter the text you want to encrypt:");
-          var text = _uiHandler.ReadUserInput();
-          var encryptedMessage = _dataEncryption.Encrypt(text);
-          _uiHandler.ShowCipherText($"Encrypted message:\n{encryptedMessage}\n");
-        }
-        else if (userChoiceToWriteOrRead == "2")
-        {
-          _uiHandler.DisplayMessage("Please enter the path to the file you want to encrypt:");
-          // Implement this
-        }
+        HandleEncryption(userChoiceToWriteOrRead);
       }
       else if (userChoiceToEncryptOrDecrypt == "2")
       {
-        if (userChoiceToWriteOrRead == "1")
-        {
-          _uiHandler.DisplayMessage("Please enter the text you want to decrypt:");
-          var text = _uiHandler.ReadUserInput();
-          var plainTextBlocks = _dataEncryption.Decrypt(text);
-          _uiHandler.ShowPlainTextBlocks(plainTextBlocks);
-        }
-        else if (userChoiceToWriteOrRead == "2")
-        {
-          _uiHandler.DisplayMessage("Please enter the path to the file you want to decrypt:");
-          // Implement this
-        }
+        HandleDecryption(userChoiceToWriteOrRead);
       }
+    }
+  }
+
+  private void HandleEncryption(string userChoiceToWriteOrRead)
+  {
+    string plainTextFilePath = "plainText.txt";
+    string cipherTextFilePath = "cipherText.txt";
+
+    if (userChoiceToWriteOrRead == "1")
+    {
+      _uiHandler.DisplayMessage("Please enter the text you want to encrypt:");
+      var text = _uiHandler.ReadUserInput();
+      var encryptedMessage = _dataEncryption.Encrypt(text);
+      _uiHandler.ShowCipherText($"Encrypted message:\n{encryptedMessage}\n");
+    }
+    else if (userChoiceToWriteOrRead == "2")
+    {
+      _uiHandler.DisplayMessage("Please enter the path to the file you want to encrypt:");
+      var stringPath = plainTextFilePath; // change this to get from user
+      var plainTextBlocks = _dataEncryptionRepository.ReadFromFile(stringPath);
+
+      _dataEncryptionRepository.EncryptToFile(cipherTextFilePath, plainTextBlocks);
+      _uiHandler.DisplayMessage("Encrypted messages has been written to the file.");
+    }
+  }
+
+  private void HandleDecryption(string userChoiceToWriteOrRead)
+  {
+    string crackedTextFilePath = "crackedText.txt";
+    string cipherTextFilePath = "cipherText.txt";
+
+    if (userChoiceToWriteOrRead == "1")
+    {
+      _uiHandler.DisplayMessage("Please enter the text you want to decrypt:");
+      var text = _uiHandler.ReadUserInput();
+      var plainTextBlocks = _dataEncryption.Decrypt(text);
+      _uiHandler.ShowPlainTextBlocks(plainTextBlocks);
+    }
+    else if (userChoiceToWriteOrRead == "2")
+    {
+      _uiHandler.DisplayMessage("Please enter the path to the file you want to encrypt:");
+      var stringPath = cipherTextFilePath; // change this to get from user
+      var cipherTextBlocks = _dataEncryptionRepository.ReadFromFile(stringPath);
+
+      _dataEncryptionRepository.DecryptToFile(crackedTextFilePath, cipherTextBlocks);
+      _uiHandler.DisplayMessage("Encrypted messages has been written to the file.");
     }
   }
 }
@@ -208,11 +236,17 @@ public class CaesarEncryption(int numberOfShifts) : IDataEncryption
 
       if (!_alphabetMapping.ContainsKey(normalizedLetter))
       {
+        cipherText += letter;
         continue;
       }
 
       int letterNum = _alphabetMapping[normalizedLetter];
       int shiftedLetterNum = (letterNum + shiftsKey) % 26;
+
+      if (shiftedLetterNum == 0)
+      {
+        shiftedLetterNum = 26;
+      }
 
       var encryptedChar = _alphabetMapping
         .FirstOrDefault(keyValuePair => keyValuePair.Value == shiftedLetterNum).Key;
@@ -254,6 +288,7 @@ public class CaesarEncryption(int numberOfShifts) : IDataEncryption
       var normalizedLetter = char.ToUpper(letter);
       if (!_alphabetMapping.ContainsKey(normalizedLetter))
       {
+        result += letter;
         continue;
       }
 
