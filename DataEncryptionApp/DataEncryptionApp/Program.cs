@@ -1,9 +1,17 @@
-﻿try
+﻿using System.Text;
+
+// Input from console can just be 1 block of text
+// Input from file can be multiple blocks of text
+
+try
 {
+  var caesarEncryption = new CaesarWithWhiteSpaceWrapper(new CaesarEncryption());
+  // var playFairEncryption = new PlayFairEncryption("Harry Potter");
+
   var dataEncryption = new DataEncryptionApplication(
-    new CaesarWithWhiteSpace(new CaesarEncryption(5)),
+    caesarEncryption,
     new DataEncryptionRepository(
-      new CaesarWithWhiteSpace(new CaesarEncryption(5)),
+      caesarEncryption,
       new TextualStringsRepository()
     ),
     new DataEncryptionUI(new ConsoleUI())
@@ -74,7 +82,7 @@ public class DataEncryptionApplication(
     {
       _uiHandler.DisplayMessage("Please enter the text you want to encrypt:");
       var text = _uiHandler.ReadUserInput();
-      var encryptedMessage = _dataEncryption.Encrypt(text);
+      var encryptedMessage = _dataEncryption.Encrypt(text, "5");
       _uiHandler.ShowCipherText($"Encrypted message:\n{encryptedMessage}\n");
     }
     else if (userChoiceToWriteOrRead == "2")
@@ -83,7 +91,7 @@ public class DataEncryptionApplication(
       var stringPath = plainTextFilePath; // change this to get from user
       var plainTextBlocks = _dataEncryptionRepository.ReadFromFile(stringPath);
 
-      _dataEncryptionRepository.EncryptToFile(cipherTextFilePath, plainTextBlocks);
+      _dataEncryptionRepository.EncryptToFile(cipherTextFilePath, plainTextBlocks, "5");
       _uiHandler.DisplayMessage("Encrypted messages has been written to the file.");
     }
   }
@@ -172,7 +180,7 @@ public class ConsoleUI : IUIHandler
 public interface IDataEncryptionRepository
 {
   IEnumerable<string> ReadFromFile(string filePath);
-  void EncryptToFile(string filePath, IEnumerable<string> plainTextBlocks);
+  void EncryptToFile(string filePath, IEnumerable<string> plainTextBlocks, string key);
   void DecryptToFile(string filePath, IEnumerable<string> cipherTextBlocks);
 }
 
@@ -184,9 +192,9 @@ public class DataEncryptionRepository(IDataEncryption dataEncryption, IStringsRe
   public IEnumerable<string> ReadFromFile(string filePath)
     => _stringsRepository.Read(filePath);
 
-  public void EncryptToFile(string filePath, IEnumerable<string> plainTextBlocks)
+  public void EncryptToFile(string filePath, IEnumerable<string> plainTextBlocks, string key)
   {
-    var encryptedBlocks = plainTextBlocks.Select(_dataEncryption.Encrypt);
+    var encryptedBlocks = plainTextBlocks.Select(block => _dataEncryption.Encrypt(block, key));
     _stringsRepository.Write(filePath, encryptedBlocks);
   }
 
@@ -208,27 +216,44 @@ public class DataEncryptionRepository(IDataEncryption dataEncryption, IStringsRe
 
 public interface IDataEncryption
 {
-  string Encrypt(string plainText);
+  string Encrypt(string plainText, string key);
   IEnumerable<string> Decrypt(string cipherText);
 }
-public class CaesarWithWhiteSpace(CaesarEncryption caesarEncryption) : IDataEncryption
+
+public abstract class AlphabetShiftEncryption : IDataEncryption
+{
+  public abstract IEnumerable<string> Decrypt(string cipherText);
+  public abstract string Encrypt(string plainText, string key);
+
+  protected int ParseStringKeyToInt(string key)
+  {
+    if (!int.TryParse(key, out int shiftKey))
+    {
+      throw new ArgumentException("Key must be a string number that can be parsed to int.");
+    }
+
+    return shiftKey;
+  }
+}
+
+public class CaesarWithWhiteSpaceWrapper(CaesarEncryption caesarEncryption) : AlphabetShiftEncryption
 {
   private readonly CaesarEncryption _caesarEncryption = caesarEncryption;
 
-  public string Encrypt(string plainText)
+  public override string Encrypt(string plainText, string shiftKey)
   {
     var blockEncryptedMessage = plainText
       .Split(' ')
-      .Select(_caesarEncryption.Encrypt);
+      .Select(word => _caesarEncryption.Encrypt(word, shiftKey));
 
     return string.Join(" ", blockEncryptedMessage);
   }
 
-  public IEnumerable<string> Decrypt(string cipherText)
+  public override IEnumerable<string> Decrypt(string cipherText)
     => _caesarEncryption.Decrypt(cipherText);
 }
 
-public class CaesarEncryption(int numberOfShifts) : IDataEncryption
+public class CaesarEncryption : AlphabetShiftEncryption
 {
   private readonly Dictionary<char, int> _alphabetMapping = new()
   {
@@ -260,9 +285,7 @@ public class CaesarEncryption(int numberOfShifts) : IDataEncryption
     ['Z'] = 26
   };
 
-  private readonly int shiftsKey = numberOfShifts;
-
-  public string Encrypt(string plainText)
+  public override string Encrypt(string plainText, string key)
   {
     string cipherText = "";
 
@@ -277,7 +300,7 @@ public class CaesarEncryption(int numberOfShifts) : IDataEncryption
       }
 
       int letterNum = _alphabetMapping[normalizedLetter];
-      int shiftedLetterNum = (letterNum + shiftsKey) % 26;
+      int shiftedLetterNum = (letterNum + ParseStringKeyToInt(key)) % 26;
 
       if (shiftedLetterNum == 0)
       {
@@ -299,7 +322,7 @@ public class CaesarEncryption(int numberOfShifts) : IDataEncryption
     return cipherText;
   }
 
-  public IEnumerable<string> Decrypt(string cipherText)
+  public override IEnumerable<string> Decrypt(string cipherText)
   {
     var results = new List<string>();
 
