@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.ObjectModel;
+using System.Text;
 
 // Input from console can just be 1 block of text
 // Input from file can be multiple blocks of text
@@ -255,7 +256,7 @@ public class CaesarWithWhiteSpaceWrapper(CaesarEncryption caesarEncryption) : Al
 
 public class CaesarEncryption : AlphabetShiftEncryption
 {
-  private readonly Dictionary<char, int> _alphabetMapping = new()
+  private readonly ReadOnlyDictionary<char, int> _alphabetMapping = new(new Dictionary<char, int>
   {
     ['A'] = 1,
     ['B'] = 2,
@@ -283,7 +284,7 @@ public class CaesarEncryption : AlphabetShiftEncryption
     ['X'] = 24,
     ['Y'] = 25,
     ['Z'] = 26
-  };
+  });
 
   public override string Encrypt(string plainText, string key)
   {
