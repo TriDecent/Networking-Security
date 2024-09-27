@@ -347,7 +347,7 @@ public class CaesarEncryption : AlphabetShiftEncryption
     {
       var blockDecryptedMessage = cipherText
         .Split(' ')
-        .Select(block => DecryptWithShift(block, shift));
+        .Select(block => Decrypt(block, shift.ToString()));
 
       results.Add($"Key {shift}: {string.Join(" ", blockDecryptedMessage)}");
     }
@@ -355,8 +355,9 @@ public class CaesarEncryption : AlphabetShiftEncryption
     return results;
   }
 
-  private string DecryptWithShift(string cipherText, int shift)
+  public override string Decrypt(string cipherText, string shift)
   {
+    var asIntKey = ParseStringKeyToInt(shift);
     var result = "";
 
     foreach (var letter in cipherText)
@@ -369,7 +370,7 @@ public class CaesarEncryption : AlphabetShiftEncryption
       }
 
       int letterNum = _alphabetMapping[normalizedLetter];
-      int shiftedLetterNum = (letterNum - shift + 26) % 26;
+      int shiftedLetterNum = (letterNum - asIntKey + 26) % 26;
 
       if (shiftedLetterNum == 0)
       {
