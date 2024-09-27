@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Text;
 
 // Input from console can just be 1 block of text
@@ -218,12 +218,19 @@ public class DataEncryptionRepository(IDataEncryption dataEncryption, IStringsRe
 public interface IDataEncryption
 {
   string Encrypt(string plainText, string key);
-  IEnumerable<string> Decrypt(string cipherText);
+  string Decrypt(string cipherText, string key);
 }
 
-public abstract class AlphabetShiftEncryption : IDataEncryption
+public interface ICrackingDataEncryption : IDataEncryption
 {
-  public abstract IEnumerable<string> Decrypt(string cipherText);
+  IEnumerable<string> CrackingDecrypt(string cipherText);
+}
+
+public abstract class AlphabetShiftEncryption : ICrackingDataEncryption
+{
+  public abstract IEnumerable<string> CrackingDecrypt(string cipherText);
+  public abstract string Decrypt(string cipherText, string key);
+
   public abstract string Encrypt(string plainText, string key);
 
   protected int ParseStringKeyToInt(string key)
@@ -250,8 +257,12 @@ public class CaesarWithWhiteSpaceWrapper(CaesarEncryption caesarEncryption) : Al
     return string.Join(" ", blockEncryptedMessage);
   }
 
-  public override IEnumerable<string> Decrypt(string cipherText)
-    => _caesarEncryption.Decrypt(cipherText);
+  public override IEnumerable<string> CrackingDecrypt(string cipherText)
+    => _caesarEncryption.CrackingDecrypt(cipherText);
+
+
+  public override string Decrypt(string cipherText, string key)
+      => _caesarEncryption.Decrypt(cipherText, key);
 }
 
 public class CaesarEncryption : AlphabetShiftEncryption
@@ -323,7 +334,7 @@ public class CaesarEncryption : AlphabetShiftEncryption
     return cipherText;
   }
 
-  public override IEnumerable<string> Decrypt(string cipherText)
+  public override IEnumerable<string> CrackingDecrypt(string cipherText)
   {
     var results = new List<string>();
 
