@@ -125,6 +125,7 @@ public interface DataEncryptionApplicationUI
 {
   string ReadUserInput();
   void ShowCipherText(string cipherText);
+  void ShowPlainText(string plainText);
   void ShowPlainTextBlocks(IEnumerable<string> plainTextBlocks);
   void DisplayMessage(string message);
 }
@@ -152,6 +153,9 @@ public class DataEncryptionUI(IUIHandler uiHandler) : DataEncryptionApplicationU
 
   public void ShowCipherText(string cipherText)
     => _uiHandler.DisplayMessage(cipherText);
+
+  public void ShowPlainText(string plainText)
+    => _uiHandler.DisplayMessage(plainText);
 
   public void ShowPlainTextBlocks(IEnumerable<string> plainTextBlocks)
   {
