@@ -463,7 +463,12 @@ public class CaesarEncryption : AlphabetShiftEncryption
 
   public override string Decrypt(string cipherText, string shift)
   {
-    var asIntKey = ParseStringKeyToInt(shift);
+    var firstChar = char.ToUpper(shift.FirstOrDefault());
+
+    var asIntKey = char.IsLetter(firstChar) ? 
+      _alphabetMapping[firstChar] :
+      ParseStringKeyToInt(shift);
+
     var result = "";
 
     foreach (var letter in cipherText)
