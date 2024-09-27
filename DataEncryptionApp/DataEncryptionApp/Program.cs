@@ -185,9 +185,13 @@ public interface IDataEncryptionRepository
   void DecryptToFile(string filePath, IEnumerable<string> cipherTextBlocks);
 }
 
-public class DataEncryptionRepository(IDataEncryption dataEncryption, IStringsRepository stringsRepository) : IDataEncryptionRepository
+public class DataEncryptionRepository(
+  IDataEncryption dataEncryption,
+  ICrackingDataEncryption crackingDataEncryption, 
+  IStringsRepository stringsRepository) : IDataEncryptionRepository
 {
   private readonly IDataEncryption _dataEncryption = dataEncryption;
+  private readonly ICrackingDataEncryption _crackingDataEncryption = crackingDataEncryption;
   private readonly IStringsRepository _stringsRepository = stringsRepository;
 
   public IEnumerable<string> ReadFromFile(string filePath)
@@ -199,9 +203,15 @@ public class DataEncryptionRepository(IDataEncryption dataEncryption, IStringsRe
     _stringsRepository.Write(filePath, encryptedBlocks);
   }
 
-  public void DecryptToFile(string filePath, IEnumerable<string> cipherTextBlocks)
+  public void DecryptToFile(string filePath, IEnumerable<string> cipherTextBlocks, string key)
   {
-    var decryptedBlocks = cipherTextBlocks.Select(_dataEncryption.Decrypt);
+    var plainTextBlocks = cipherTextBlocks.Select(block => _dataEncryption.Decrypt(block, key));
+    _stringsRepository.Write(filePath, plainTextBlocks);
+  }
+
+  public void CrackingDecryptToFile(string filePath, IEnumerable<string> cipherTextBlocks)
+  {
+    var decryptedBlocks = cipherTextBlocks.Select(_crackingDataEncryption.CrackingDecrypt);
     var appendedDecryptedBlocks = new List<string>();
 
     foreach (var block in decryptedBlocks)
