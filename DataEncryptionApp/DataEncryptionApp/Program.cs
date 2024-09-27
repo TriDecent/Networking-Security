@@ -338,7 +338,7 @@ public class CaesarEncryption : AlphabetShiftEncryption
         .Split(' ')
         .Select(block => DecryptWithShift(block, shift));
 
-      results.Add(string.Join(" ", blockDecryptedMessage));
+      results.Add($"Key {shift}: {string.Join(" ", blockDecryptedMessage)}");
     }
 
     return results;
