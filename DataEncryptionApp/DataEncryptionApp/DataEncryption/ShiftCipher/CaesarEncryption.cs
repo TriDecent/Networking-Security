@@ -37,6 +37,12 @@ public class CaesarEncryption : AlphabetShiftEncryption
 
   public override string Encrypt(string plainText, string key)
   {
+    var firstChar = char.ToUpper(key.FirstOrDefault());
+
+    var asIntKey = char.IsLetter(firstChar) ?
+      _alphabetMapping[firstChar] :
+      ParseStringKeyToInt(key);
+
     var cipherText = new StringBuilder(plainText.Length);
 
     foreach (var letter in plainText)
@@ -50,7 +56,7 @@ public class CaesarEncryption : AlphabetShiftEncryption
       }
 
       int letterNum = _alphabetMapping[normalizedLetter];
-      int shiftedLetterNum = (letterNum + ParseStringKeyToInt(key)) % 26;
+      int shiftedLetterNum = (letterNum + asIntKey) % 26;
 
       if (shiftedLetterNum == 0)
       {
