@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text;
 
 namespace DataEncryptionApp.DataEncryption.ShiftCipher;
 
@@ -36,7 +37,13 @@ public class CaesarEncryption : AlphabetShiftEncryption
 
   public override string Encrypt(string plainText, string key)
   {
-    string cipherText = "";
+    var firstChar = char.ToUpper(key.FirstOrDefault());
+
+    var asIntKey = char.IsLetter(firstChar) ?
+      _alphabetMapping[firstChar] :
+      ParseStringKeyToInt(key);
+
+    var cipherText = new StringBuilder(plainText.Length);
 
     foreach (var letter in plainText)
     {
@@ -44,12 +51,12 @@ public class CaesarEncryption : AlphabetShiftEncryption
 
       if (!_alphabetMapping.ContainsKey(normalizedLetter))
       {
-        cipherText += letter;
+        cipherText.Append(letter);
         continue;
       }
 
       int letterNum = _alphabetMapping[normalizedLetter];
-      int shiftedLetterNum = (letterNum + ParseStringKeyToInt(key)) % 26;
+      int shiftedLetterNum = (letterNum + asIntKey) % 26;
 
       if (shiftedLetterNum == 0)
       {
@@ -61,14 +68,14 @@ public class CaesarEncryption : AlphabetShiftEncryption
 
       if (char.IsLower(letter))
       {
-        cipherText += char.ToLower(encryptedChar);
+        cipherText.Append(char.ToLower(encryptedChar));
         continue;
       }
 
-      cipherText += encryptedChar;
+      cipherText.Append(encryptedChar);
     }
 
-    return cipherText;
+    return cipherText.ToString();
   }
 
   public override IEnumerable<string> CrackingDecrypt(string cipherText)
@@ -100,14 +107,14 @@ public class CaesarEncryption : AlphabetShiftEncryption
       _alphabetMapping[firstChar] :
       ParseStringKeyToInt(shift);
 
-    var result = "";
+    var result = new StringBuilder(cipherText.Length);
 
     foreach (var letter in cipherText)
     {
       var normalizedLetter = char.ToUpper(letter);
       if (!_alphabetMapping.ContainsKey(normalizedLetter))
       {
-        result += letter;
+        result.Append(letter);
         continue;
       }
 
@@ -124,13 +131,13 @@ public class CaesarEncryption : AlphabetShiftEncryption
 
       if (char.IsLower(letter))
       {
-        result += char.ToLower(decryptedChar);
+        result.Append(char.ToLower(decryptedChar));
         continue;
       }
 
-      result += decryptedChar;
+      result.Append(decryptedChar);
     }
 
-    return result;
+    return result.ToString();
   }
 }
