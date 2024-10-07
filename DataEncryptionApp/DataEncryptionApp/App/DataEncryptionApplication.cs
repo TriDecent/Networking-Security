@@ -25,8 +25,8 @@ public class DataEncryptionApplication
 
   public void Run()
   {
-    string plainTextFilePath = "plainText.txt";
-    string cipherTextFilePath = "cipherText.txt";
+    string plainTextFilePath = "plainTextForPlayFair.txt";
+    string cipherTextFilePath = "cipherTextForPlayFair.txt";
     string crackedTextFilePath = "crackedText.txt";
 
     bool isExit = false;

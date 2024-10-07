@@ -1,5 +1,6 @@
 ﻿using DataEncryptionApp.App;
 using DataEncryptionApp.DataAccess;
+using DataEncryptionApp.DataEncryption.PlayFair;
 using DataEncryptionApp.DataEncryption.ShiftCipher;
 using DataEncryptionApp.UI;
 
@@ -8,16 +9,16 @@ using DataEncryptionApp.UI;
 
 try
 {
-  var caesarEncryption = new CaesarWithWhiteSpaceWrapper(new CaesarEncryption()); // Alters here to use another encryption.
+  var currentEncryption = new PlayFairEncryption(); // Alters here to use another encryption.
 
   // var playFairEncryption = new PlayFairEncryption("Harry Potter");
 
   var dataEncryption = new DataEncryptionApplication(
-    caesarEncryption, // default 
-    caesarEncryption, // cracking
+    currentEncryption, // default 
+    currentEncryption, // cracking
     new DataEncryptionRepository(
-      caesarEncryption, // default
-      caesarEncryption, // cracking
+      currentEncryption, // default
+      currentEncryption, // cracking
       new TextualStringsRepository()
     ),
     new DataEncryptionUI(new ConsoleUI())
