@@ -9,7 +9,7 @@ using DataEncryptionApp.UI;
 
 try
 {
-  var currentEncryption = new PlayFairEncryption(); // Alters here to use another encryption.
+  var currentEncryption = new VigenereEncryption(); // Alters here to use another encryption.
 
   // var playFairEncryption = new PlayFairEncryption("Harry Potter");
 

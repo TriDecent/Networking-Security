@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using DataEncryptionApp.DataEncryption;
+﻿using System.Text;
 
 namespace DataEncryptionApp.DataEncryption.ShiftCipher
 {
@@ -9,10 +6,9 @@ namespace DataEncryptionApp.DataEncryption.ShiftCipher
   {
     private const int AlphabetSize = 26;
 
-    // Phương thức mã hóa sử dụng thuật toán Vigenère
     public override string Encrypt(string plainText, string key)
     {
-      StringBuilder cipherText = new StringBuilder();
+      StringBuilder cipherText = new();
       key = FormatKey(plainText, key);
 
       for (int i = 0; i < plainText.Length; i++)
@@ -30,17 +26,16 @@ namespace DataEncryptionApp.DataEncryption.ShiftCipher
         }
         else
         {
-          cipherText.Append(plainChar); // Giữ nguyên các ký tự không phải chữ cái
+          cipherText.Append(plainChar);
         }
       }
 
       return cipherText.ToString();
     }
 
-    // Phương thức giải mã sử dụng thuật toán Vigenère
     public override string Decrypt(string cipherText, string key)
     {
-      StringBuilder plainText = new StringBuilder();
+      StringBuilder plainText = new();
       key = FormatKey(cipherText, key);
 
       for (int i = 0; i < cipherText.Length; i++)
@@ -58,23 +53,21 @@ namespace DataEncryptionApp.DataEncryption.ShiftCipher
         }
         else
         {
-          plainText.Append(cipherChar); // Giữ nguyên các ký tự không phải chữ cái
+          plainText.Append(cipherChar);
         }
       }
 
       return plainText.ToString();
     }
 
-    // Phương thức CrackingDecrypt không được sử dụng trong ví dụ này
     public override IEnumerable<string> CrackingDecrypt(string cipherText)
     {
-      throw new NotImplementedException("Chức năng phá mã chưa được triển khai.");
+      throw new NotImplementedException();
     }
 
-    // Hàm trợ giúp để điều chỉnh chiều dài khóa phù hợp với văn bản
     private string FormatKey(string text, string key)
     {
-      StringBuilder extendedKey = new StringBuilder();
+      StringBuilder extendedKey = new();
       int keyLength = key.Length;
 
       for (int i = 0; i < text.Length; i++)

@@ -66,7 +66,7 @@ public class PlayFairEncryption : ICrackingDataEncryption
 			{
 				char character = matrixAlphabet[i, j];
 
-				Tuple<char, Tuple<int, int>> tmp = new Tuple<char, Tuple<int, int>>(character, new Tuple<int, int>(i, j));
+				Tuple<char, Tuple<int, int>> tmp = new(character, new Tuple<int, int>(i, j));
 				matrixKey[i, j] = tmp;
 
 			}
@@ -116,7 +116,7 @@ public class PlayFairEncryption : ICrackingDataEncryption
 			{
 				char character = matrixAlphabet[i, j];
 
-				Tuple<char, Tuple<int, int>> tmp = new Tuple<char, Tuple<int, int>>(character, new Tuple<int, int>(i, j));
+				Tuple<char, Tuple<int, int>> tmp = new(character, new Tuple<int, int>(i, j));
 				matrixKey[i, j] = tmp;
 
 			}
@@ -240,7 +240,7 @@ public class PlayFairEncryption : ICrackingDataEncryption
 	private char? returnAlphaByColumnRow(int row, int column, Tuple<char, Tuple<int, int>>[,] matrix)
 	{
 		char? resultChar = null;
-		Tuple<int, int> target = new Tuple<int, int>(row, column);
+		Tuple<int, int> target = new(row, column);
 		for (int i = 0; i < matrix.GetLength(0); i++)
 		{
 			for (int j = 0; j < matrix.GetLength(1); j++)
@@ -337,7 +337,7 @@ public class PlayFairEncryption : ICrackingDataEncryption
 		plaintext = plaintext.Replace("\r", "");*/
 
 
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new();
 		foreach (char c in plaintext)
 		{
 			if (c >= 'A' && c <= 'Z')
@@ -385,7 +385,7 @@ public class PlayFairEncryption : ICrackingDataEncryption
 		key = key.Trim();
 		key = key.ToUpper();
         key = key.Replace('J', 'I');
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
 		foreach (char c in key)
 		{
 			if (c >= 'A' && c <= 'Z')
@@ -400,7 +400,7 @@ public class PlayFairEncryption : ICrackingDataEncryption
 	{
 		cipherText = cipherText.Trim();
 		cipherText = cipherText.ToUpper();
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new();
 		foreach (char c in cipherText)
 		{
 			if (c >= 'A' && c <= 'Z')
