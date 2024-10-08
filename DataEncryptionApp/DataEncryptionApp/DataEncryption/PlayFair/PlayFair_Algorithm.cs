@@ -381,7 +381,7 @@ namespace DataEncryptionApp.DataEncryption.PlayFair
                 {
 
                     plaintext = plaintext.Insert(i + 1, "X");
-                    i = i + 3;
+                    i = i + 2;
                 }
                 else
                 {
