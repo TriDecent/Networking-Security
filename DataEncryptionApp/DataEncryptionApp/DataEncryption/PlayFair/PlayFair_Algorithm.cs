@@ -406,6 +406,7 @@ namespace DataEncryptionApp.DataEncryption.PlayFair
         {
             key = key.Trim();
             key = key.ToUpper();
+            key = key.Replace('J', 'I');
             StringBuilder sb = new StringBuilder();
             foreach (char c in key)
             {
@@ -431,6 +432,30 @@ namespace DataEncryptionApp.DataEncryption.PlayFair
                 }
             }
             cipherText = sb.ToString();
+
+            for (int i = 0; i < cipherText.Length;)
+            {
+                if (cipherText[i].Equals(cipherText[i + 1]))
+                {
+
+                    cipherText = cipherText.Insert(i + 1, "X");
+                    i = i + 2;
+                }
+                else
+                {
+                    i = i + 2;
+                }
+
+                if (i == cipherText.Length - 1)
+                {
+                    break;
+                }
+            }
+
+            if (cipherText.Length % 2 != 0)
+            {
+                cipherText += "X";
+            }
         }
 
         private string DecryptUsingPlayFair(string cipherText, Tuple<char, Tuple<int, int>>[,] matrixKey)
