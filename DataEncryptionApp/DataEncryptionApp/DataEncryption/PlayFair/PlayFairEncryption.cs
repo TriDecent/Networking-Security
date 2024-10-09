@@ -43,21 +43,15 @@ public class PlayFairEncryption : ICrackingDataEncryption
 
 	public string Decrypt(string cipherText, string key)
 	{
-		//throw new NotImplementedException();
-		checkKey(ref key);
-		checkCipherText(ref cipherText);
+		NormalizeKey(ref key);
+		NormalizeCipherText(ref cipherText);
 
 		char[,] matrixAlphabet = new char[5, 5];
-		Tuple<int, int> tuple1 = createMatrixAlphabet(matrixAlphabet, key);
-
-		int row_after_fill_key = tuple1.Item1;
-		int column_after_fill_key = tuple1.Item2;
+		(int row_after_fill_key, int column_after_fill_key) = createMatrixAlphabet(matrixAlphabet, key);
 
 		fillRestOfAlpha(matrixAlphabet, row_after_fill_key, column_after_fill_key);
 
-
-
-		Tuple<char, Tuple<int, int>>[,] matrixKey = new Tuple<char, Tuple<int, int>>[5, 5];
+		(char character, (int, int) position)[,] matrixKey = new (char, (int, int))[5, 5];
 
 		//create data for matrix key
 		for (int i = 0; i < 5; i++)
@@ -65,15 +59,9 @@ public class PlayFairEncryption : ICrackingDataEncryption
 			for (int j = 0; j < 5; j++)
 			{
 				char character = matrixAlphabet[i, j];
-
-				Tuple<char, Tuple<int, int>> tmp = new(character, new Tuple<int, int>(i, j));
-				matrixKey[i, j] = tmp;
-
+				matrixKey[i, j] = (character, (i, j));
 			}
 		}
-
-		//create data for matrix key
-
 
 		Console.WriteLine("KEY MATRIX");
 		for (int i = 0; i < 5; i++)
@@ -92,21 +80,14 @@ public class PlayFairEncryption : ICrackingDataEncryption
 
 	public string Encrypt(string plainText, string key)
 	{
-
-		checkPlainText(ref plainText);
-		
-		checkKey(ref key);
+		NormalizePlainText(ref plainText);
+		NormalizeKey(ref key);
 		char[,] matrixAlphabet = new char[5, 5];
-		Tuple<int, int> tuple1 = createMatrixAlphabet(matrixAlphabet, key);
-
-		int row_after_fill_key = tuple1.Item1;
-		int column_after_fill_key = tuple1.Item2;
+		(int row_after_fill_key, int column_after_fill_key) = createMatrixAlphabet(matrixAlphabet, key);
 
 		fillRestOfAlpha(matrixAlphabet, row_after_fill_key, column_after_fill_key);
 
-
-
-		Tuple<char, Tuple<int, int>>[,] matrixKey = new Tuple<char, Tuple<int, int>>[5, 5];
+		(char character, (int, int) position)[,] matrixKey = new (char, (int, int))[5, 5];
 
 		//create data for matrix key
 		for (int i = 0; i < 5; i++)
@@ -114,14 +95,9 @@ public class PlayFairEncryption : ICrackingDataEncryption
 			for (int j = 0; j < 5; j++)
 			{
 				char character = matrixAlphabet[i, j];
-
-				Tuple<char, Tuple<int, int>> tmp = new(character, new Tuple<int, int>(i, j));
-				matrixKey[i, j] = tmp;
-
+				matrixKey[i, j] = (character, (i, j));
 			}
 		}
-
-		//create data for matrix key
 
 		Console.WriteLine("KEY MATRIX");
 		for (int i = 0; i < 5; i++)
@@ -138,7 +114,7 @@ public class PlayFairEncryption : ICrackingDataEncryption
 		return cipherText;
 	}
 
-	private bool checkKeyIsExist(char tmp)
+	private bool DoesKeyExist(char tmp)
 	{
 		try
 		{
@@ -154,14 +130,14 @@ public class PlayFairEncryption : ICrackingDataEncryption
 		}
 	}
 
-	private Tuple<int, int> createMatrixAlphabet(char[,] matrixAlphabet, string key)
+	private (int, int) createMatrixAlphabet(char[,] matrixAlphabet, string key)
 	{
 		int row = 0;
 		int column = 0;
 		int r = 0, c = 0;
 		for (int i = 0; i < key.Length; i++)
 		{
-			if (checkKeyIsExist(key[i]) == false)
+			if (DoesKeyExist(key[i]) == false)
 			{
 				matrixAlphabet[r, c] = key[i];
 				if (c == 4)
@@ -177,10 +153,9 @@ public class PlayFairEncryption : ICrackingDataEncryption
 				alphabetMap[key[i]] = true;
 				row = r;
 				column = c;
-
 			}
 		}
-		return new Tuple<int, int>(row, column);
+		return (row, column);
 	}
 
 	private void fillRestOfAlpha(char[,] matrix, int r, int c)
@@ -189,12 +164,9 @@ public class PlayFairEncryption : ICrackingDataEncryption
 		{
 			foreach (char key in alphabetMap.Keys)
 			{
-
-				if (checkKeyIsExist(key) == false)
+				if (DoesKeyExist(key) == false)
 				{
-
 					matrix[r, c] = key;
-
 					alphabetMap[key] = true;
 					if (c == 4)
 					{
@@ -204,72 +176,51 @@ public class PlayFairEncryption : ICrackingDataEncryption
 					else
 					{
 						c++;
-
 					}
 				}
 			}
 		}
 	}
 
-	private Tuple<int, int> returnValueOfCharacter(char x, Tuple<char, Tuple<int, int>>[,] matrix)
+	private (int, int)? ReturnValueOfCharacter(char x, (char character, (int, int) position)[,] matrix)
 	{
-		Tuple<int, int> result = null;
-
 		for (int i = 0; i < matrix.GetLength(0); i++)
 		{
 			for (int j = 0; j < matrix.GetLength(1); j++)
 			{
-				if (matrix[i, j].Item1 == x)
+				if (matrix[i, j].character == x)
 				{
-					result = matrix[i, j].Item2;
-					break;
+					return matrix[i, j].position;
 				}
 			}
 		}
-		if (result != null)
-		{
-			return result;
-		}
-		else
-		{
-			return null;
-		}
+		return null;
 	}
 
-	private char? returnAlphaByColumnRow(int row, int column, Tuple<char, Tuple<int, int>>[,] matrix)
+	private char? ReturnAlphaByColumnRow(int row, int column, (char character, (int, int) position)[,] matrix)
 	{
-		char? resultChar = null;
-		Tuple<int, int> target = new(row, column);
 		for (int i = 0; i < matrix.GetLength(0); i++)
 		{
 			for (int j = 0; j < matrix.GetLength(1); j++)
 			{
-				if (matrix[i, j].Item2.Item1 == target.Item1 && matrix[i, j].Item2.Item2 == target.Item2)
+				if (matrix[i, j].position == (row, column))
 				{
-					resultChar = matrix[i, j].Item1;
-					break;
+					return matrix[i, j].character;
 				}
 			}
 		}
-		return resultChar;
+		return null;
 	}
 
-	private string EncryptUsingPlayFair(string plainText, Tuple<char, Tuple<int, int>>[,] matrixKey)
+	private string EncryptUsingPlayFair(string plainText, (char character, (int, int) position)[,] matrixKey)
 	{
 		string cipherText = "";
 		char[] splitPlainText = plainText.ToCharArray();
 
 		for (int i = 0; i < splitPlainText.Length; i = i + 2)
 		{
-			Tuple<int, int> value1 = returnValueOfCharacter(splitPlainText[i], matrixKey);
-
-			int row1 = value1.Item1;
-			int column1 = value1.Item2;
-
-			Tuple<int, int> value2 = returnValueOfCharacter(splitPlainText[i + 1], matrixKey);
-
-			int row2 = value2.Item1;
-			int column2 = value2.Item2;
+			(int row1, int column1) = ReturnValueOfCharacter(splitPlainText[i], matrixKey).Value;
+			(int row2, int column2) = ReturnValueOfCharacter(splitPlainText[i + 1], matrixKey).Value;
 
 			if (row1 == row2)
 			{
@@ -284,7 +235,6 @@ public class PlayFairEncryption : ICrackingDataEncryption
 					column2 = 0;
 				}
 			}
-
 			else if (column1 == column2)
 			{
 				row1++;
@@ -313,28 +263,22 @@ public class PlayFairEncryption : ICrackingDataEncryption
 				}
 			}
 
-			char? charResult1 = returnAlphaByColumnRow(row1, column1, matrixKey);
-
-			char? charResult2 = returnAlphaByColumnRow(row2, column2, matrixKey);
+			char? charResult1 = ReturnAlphaByColumnRow(row1, column1, matrixKey);
+			char? charResult2 = ReturnAlphaByColumnRow(row2, column2, matrixKey);
 
 			cipherText += charResult1;
 			cipherText += charResult2;
 			cipherText += " ";
-
 		}
 
 		return cipherText;
 	}
-	private void checkPlainText(ref string plaintext)
+
+	private static void NormalizePlainText(ref string plaintext)
 	{
-		//check format
 		plaintext = plaintext.Trim();
 		plaintext = plaintext.ToUpper();
-		//plaintext = plaintext.Replace(" ", "");
 		plaintext = plaintext.Replace('J', 'I');
-		/*plaintext = plaintext.Replace("\n", "");
-		plaintext = plaintext.Replace("\r", "");*/
-
 
 		StringBuilder sb = new();
 		foreach (char c in plaintext)
@@ -345,20 +289,11 @@ public class PlayFairEncryption : ICrackingDataEncryption
 			}
 		}
 		plaintext = sb.ToString();
-		/*for (int i=0;i< plaintext.Length; i++)
-		{
-				if (!(plaintext[i] >= 'A' && plaintext[i] <= 'Z'))
-				{
-						plaintext=plaintext.Remove(i,1);
-				}
-		}*/
-		//TTT
 
 		for (int i = 0; i < plaintext.Length;)
 		{
 			if (plaintext[i].Equals(plaintext[i + 1]))
 			{
-
 				plaintext = plaintext.Insert(i + 1, "X");
 				i = i + 2;
 			}
@@ -379,12 +314,12 @@ public class PlayFairEncryption : ICrackingDataEncryption
 		}
 	}
 
-	private void checkKey(ref string key)
+	private static void NormalizeKey(ref string key)
 	{
 		key = key.Trim();
 		key = key.ToUpper();
-        key = key.Replace('J', 'I');
-        StringBuilder sb = new();
+		key = key.Replace('J', 'I');
+		StringBuilder sb = new();
 		foreach (char c in key)
 		{
 			if (c >= 'A' && c <= 'Z')
@@ -395,7 +330,7 @@ public class PlayFairEncryption : ICrackingDataEncryption
 		key = sb.ToString();
 	}
 
-	private void checkCipherText(ref string cipherText)
+	private static void NormalizeCipherText(ref string cipherText)
 	{
 		cipherText = cipherText.Trim();
 		cipherText = cipherText.ToUpper();
@@ -408,47 +343,39 @@ public class PlayFairEncryption : ICrackingDataEncryption
 			}
 		}
 		cipherText = sb.ToString();
-        for (int i = 0; i < cipherText.Length;)
-        {
-            if (cipherText[i].Equals(cipherText[i + 1]))
-            {
+		for (int i = 0; i < cipherText.Length;)
+		{
+			if (cipherText[i].Equals(cipherText[i + 1]))
+			{
+				cipherText = cipherText.Insert(i + 1, "X");
+				i = i + 2;
+			}
+			else
+			{
+				i = i + 2;
+			}
 
-                cipherText = cipherText.Insert(i + 1, "X");
-                i = i + 2;
-            }
-            else
-            {
-                i = i + 2;
-            }
+			if (i == cipherText.Length - 1)
+			{
+				break;
+			}
+		}
 
-            if (i == cipherText.Length - 1)
-            {
-                break;
-            }
-        }
+		if (cipherText.Length % 2 != 0)
+		{
+			cipherText += "X";
+		}
+	}
 
-        if (cipherText.Length % 2 != 0)
-        {
-            cipherText += "X";
-        }
-    }
-
-	private string DecryptUsingPlayFair(string cipherText, Tuple<char, Tuple<int, int>>[,] matrixKey)
+	private string DecryptUsingPlayFair(string cipherText, (char character, (int, int) position)[,] matrixKey)
 	{
 		string plainText = "";
 		char[] splitCipherText = cipherText.ToCharArray();
 
 		for (int i = 0; i < splitCipherText.Length; i = i + 2)
 		{
-			Tuple<int, int> value1 = returnValueOfCharacter(splitCipherText[i], matrixKey);
-
-			int row1 = value1.Item1;
-			int column1 = value1.Item2;
-
-			Tuple<int, int> value2 = returnValueOfCharacter(splitCipherText[i + 1], matrixKey);
-
-			int row2 = value2.Item1;
-			int column2 = value2.Item2;
+			(int row1, int column1) = ReturnValueOfCharacter(splitCipherText[i], matrixKey).Value;
+			(int row2, int column2) = ReturnValueOfCharacter(splitCipherText[i + 1], matrixKey).Value;
 
 			if (row1 == row2)
 			{
@@ -463,7 +390,6 @@ public class PlayFairEncryption : ICrackingDataEncryption
 					column2 = 4;
 				}
 			}
-
 			else if (column1 == column2)
 			{
 				row1--;
@@ -492,16 +418,13 @@ public class PlayFairEncryption : ICrackingDataEncryption
 				}
 			}
 
-			char? charResult1 = returnAlphaByColumnRow(row1, column1, matrixKey);
-
-			char? charResult2 = returnAlphaByColumnRow(row2, column2, matrixKey);
+			char? charResult1 = ReturnAlphaByColumnRow(row1, column1, matrixKey);
+			char? charResult2 = ReturnAlphaByColumnRow(row2, column2, matrixKey);
 
 			plainText += charResult1;
 			plainText += charResult2;
 			plainText += " ";
-
 		}
 		return plainText;
-
 	}
 }
