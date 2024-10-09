@@ -1,5 +1,6 @@
 ﻿using DataEncryptionApp.App;
 using DataEncryptionApp.DataAccess;
+using DataEncryptionApp.DataEncryption.AffineCipher;
 using DataEncryptionApp.DataEncryption.PlayFair;
 using DataEncryptionApp.DataEncryption.ShiftCipher;
 using DataEncryptionApp.UI;
@@ -9,7 +10,7 @@ using DataEncryptionApp.UI;
 
 try
 {
-  var currentEncryption = new VigenereEncryption(); // Alters here to use another encryption.
+  var currentEncryption = new AffineEncryption(); // Alters here to use another encryption.
 
   // var playFairEncryption = new PlayFairEncryption("Harry Potter");
 

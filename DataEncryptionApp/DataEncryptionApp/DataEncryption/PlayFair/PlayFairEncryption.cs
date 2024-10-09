@@ -92,10 +92,9 @@ public class PlayFairEncryption : ICrackingDataEncryption
 
 	public string Encrypt(string plainText, string key)
 	{
-		//throw new NotImplementedException();
 
 		checkPlainText(ref plainText);
-		//Console.WriteLine(plainText);
+		
 		checkKey(ref key);
 		char[,] matrixAlphabet = new char[5, 5];
 		Tuple<int, int> tuple1 = createMatrixAlphabet(matrixAlphabet, key);
