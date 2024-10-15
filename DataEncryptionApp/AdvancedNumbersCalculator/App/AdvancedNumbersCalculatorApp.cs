@@ -27,23 +27,30 @@ internal class AdvancedNumbersCalculatorApp
     _uiHandler.ShowMessage(_calculator.GenerateRandomPrimeNumber<ushort>().ToString());
 
     _uiHandler.ShowMessage("Generate a 64 bits random prime number: ");
-    _uiHandler.ShowMessage(_calculator.GenerateRandomPrimeNumber<ulong>().ToString());
+    // _uiHandler.ShowMessage(_calculator.GenerateRandomPrimeNumber<ulong>().ToString());
 
 
     _uiHandler.ShowMessage("Generate the first 10 Mersenne prime numbers: ");
-    foreach (var number in _calculator.GenerateMersennePrimeNumbers().Take(10))
-    {
-      _uiHandler.ShowMessage(number.ToString());
-    }
+    // foreach (var number in _calculator.GenerateMersennePrimeNumbers().Take(10))
+    // {
+    //   _uiHandler.ShowMessage(number.ToString());
+    // }
 
     _uiHandler.ShowMessage("Get the 10 largest prime numbers under 10 first Mersenne prime number: ");
 
-    foreach (var number in _calculator.Get10LargestPrimeNumbersUnder10FirstMersennePrimeNumber())
-    {
-      ConsoleUIHandler.ShowMessageWithoutNewLine(number.ToString());
-    }
+    // foreach (var number in _calculator.Get10LargestPrimeNumbersUnder10FirstMersennePrimeNumber())
+    // {
+    //   ConsoleUIHandler.ShowMessageWithoutNewLine(number.ToString());
+    // }
 
     _uiHandler.ShowMessage(string.Empty);
+
+    _uiHandler.ShowMessage("Enter a number to check if it is a prime number: ");
+    _uiHandler.ShowMessage(
+      _calculator.IsAPrimeNumber(
+        BigInteger.Parse(_uiHandler.GetInput())
+      ).ToString()
+    );
 
 
     _uiHandler.ShowMessage("The greatest common divisor of 2 large numbers: ");
