@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataEncryptionApp", "DataEncryptionApp\DataEncryptionApp.csproj", "{D9FE105F-B7AA-41D6-B8EE-8C942147C99E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvancedNumbersCalculator", "AdvancedNumbersCalculator\AdvancedNumbersCalculator.csproj", "{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D9FE105F-B7AA-41D6-B8EE-8C942147C99E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9FE105F-B7AA-41D6-B8EE-8C942147C99E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9FE105F-B7AA-41D6-B8EE-8C942147C99E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
