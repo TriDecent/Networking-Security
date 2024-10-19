@@ -38,4 +38,17 @@ public static class NumberExtensions
     BigInteger upperBound = (root + 1) * (root + 1);
     return n >= lowerBound && n < upperBound;
   }
+
+  public static BigInteger RandomBigInteger(BigInteger minValue, BigInteger maxValue, Random rng)
+  {
+    byte[] bytes = maxValue.ToByteArray();
+    BigInteger result;
+    do
+    {
+      rng.NextBytes(bytes);
+      bytes[^1] &= 0x7F; // Đảm bảo số dương
+      result = new BigInteger(bytes);
+    } while (result < minValue || result > maxValue);
+    return result;
+  }
 }
