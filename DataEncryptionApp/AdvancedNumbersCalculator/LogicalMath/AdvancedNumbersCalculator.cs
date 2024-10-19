@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Numerics;
 using DataEncryptionApp.AdvancedNumbersCalculator.Utilities;
 
@@ -49,7 +50,7 @@ internal class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
 
   public IEnumerable<BigInteger> GenerateMersennePrimeNumbers()
   {
-    int i = 0;
+    int i = 2;
     while (true)
     {
       var number = BigInteger.Pow(2, i) - 1;
@@ -65,59 +66,96 @@ internal class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
 
   public IEnumerable<BigInteger> Get10LargestPrimeNumbersUnder10FirstMersennePrimeNumber()
   {
-    // var mersennePrimeNumbers = GenerateMersennePrimeNumbers().Take(10);
-    // var tenthMersennePrimeNumber = mersennePrimeNumbers.Last();
+    BigInteger tenthMersennePrimeNumber = GenerateMersennePrimeNumbers().Skip(9).First();
 
-    // return GeneratePrimeNumbersUpTo(tenthMersennePrimeNumber).Reverse().Take(10);
-    var primeNumbersUnder10 = GeneratePrimeNumbersUpTo(BigInteger.Parse("524287")).Reverse().Take(10);
-    return primeNumbersUnder10;
+    var primes = new List<BigInteger>();
+
+    foreach (var prime in GeneratePrimeNumbersDownTo(tenthMersennePrimeNumber).Take(10))
+    {
+      primes.Add(prime);
+    }
+
+    primes.Reverse();
+    return primes;
   }
 
-  private static IEnumerable<BigInteger> GeneratePrimeNumbersUpTo(BigInteger limit)
+  private IEnumerable<BigInteger> GeneratePrimeNumbersDownTo(BigInteger limit)
   {
-    // Sieve of Eratosthenes algorithm
     if (limit < 2)
     {
       yield break;
     }
 
-    var isPrime = new Dictionary<BigInteger, bool>();
-    for (BigInteger i = 2; i <= limit; i++)
+    // Start checking from odd numbers
+    if (limit % 2 == 0)
     {
-      isPrime[i] = true;
+      limit--;
     }
 
-    for (BigInteger i = 2; i * i <= limit; i++)
+    for (BigInteger i = limit; i >= 2; i -= 2)
     {
-      if (isPrime[i])
-      {
-        for (BigInteger j = i * i; j <= limit; j += i)
-        {
-          isPrime[j] = false;
-        }
-      }
-    }
-
-    for (BigInteger i = 2; i <= limit; i++)
-    {
-      if (isPrime[i])
+      if (IsAPrimeNumber(i))
       {
         yield return i;
       }
     }
+
+    yield return 2; // 2 is the smallest prime number
   }
 
   public bool IsAPrimeNumber<T>(T number) where T : INumber<T>
   {
     if (number <= T.One) return false;
-    if (number == T.CreateChecked(2)) return true;
-    if (number % T.CreateChecked(2) == T.Zero) return false;
+    if (number == T.CreateChecked(2) || number == T.CreateChecked(3)) return true;
+    if (number % T.CreateChecked(2) == T.Zero || number % T.CreateChecked(3) == T.Zero) return false;
 
-    var limit = number.Sqrt();
-    for (T i = T.CreateChecked(3); i <= limit; i += T.CreateChecked(2))
+
+    if (!MillerRabinTest(BigInteger.Parse(number.ToString()!))) return false;
+
+    // Trial Division (works well for small numbers)
+    // var limit = number.Sqrt();
+    // for (T i = T.CreateChecked(5); i <= limit; i += T.CreateChecked(6))
+    // {
+    //   if (number % i == T.Zero || number % (i + T.CreateChecked(2)) == T.Zero) return false;
+    // }
+
+    return true;
+  }
+
+  // Miller-Rabin Primarily Test
+  private static bool MillerRabinTest(BigInteger number, int certainty = 10)
+  {
+    // Check is not needed since the number is already checked in the IsAPrimeNumber method
+
+    BigInteger d = number - 1;
+    int s = 0;
+    while (d % 2 == 0)
     {
-      if (number % i == T.Zero) return false;
+      d /= 2;
+      s++;
     }
+
+    Random rng = new();
+    for (int i = 0; i < certainty; i++)
+    {
+      BigInteger a = NumberExtensions.RandomBigInteger(2, number - 2, rng);
+      BigInteger x = BigInteger.ModPow(a, d, number);
+      if (x == 1 || x == number - 1) continue;
+
+      bool continueLoop = false;
+      for (int r = 0; r < s - 1; r++)
+      {
+        x = BigInteger.ModPow(x, 2, number);
+        if (x == 1) return false;
+        if (x == number - 1)
+        {
+          continueLoop = true;
+          break;
+        }
+      }
+      if (!continueLoop) return false;
+    }
+    
     return true;
   }
 
