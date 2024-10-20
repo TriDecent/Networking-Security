@@ -14,6 +14,7 @@ public class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
       Type type when type == typeof(byte) => 8,
       Type type when type == typeof(ushort) => 16,
       Type type when type == typeof(ulong) => 64,
+      Type type when type == typeof(BigInteger) => 2048,
       _ => throw new NotSupportedException($"Type {typeof(T)} is not supported.")
     };
 
@@ -33,15 +34,23 @@ public class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
       case 8:
         bytes = new byte[1]; // 8-bit number
         random.NextBytes(bytes);
+        bytes[0] |= 0x80; // Ensure the highest bit is set to 1
         return (T)(object)bytes[0];
       case 16:
         bytes = new byte[2]; // 16-bit number
         random.NextBytes(bytes);
+        bytes[0] |= 0x80; // Ensure the highest bit is set to 1
         return (T)(object)BitConverter.ToUInt16(bytes);
       case 64:
         bytes = new byte[8]; // 64-bit number
         random.NextBytes(bytes);
+        bytes[0] |= 0x80; // Ensure the highest bit is set to 1
         return (T)(object)BitConverter.ToUInt64(bytes);
+      case 2048:
+        bytes = new byte[256]; // 2048-bit number
+        random.NextBytes(bytes);
+        bytes[0] |= 0x80; // Ensure the highest bit is set to 1
+        return (T)(object)new BigInteger(bytes);
       default:
         throw new NotSupportedException($"Bit size {bitSize} is not supported.");
     }
