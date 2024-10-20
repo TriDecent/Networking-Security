@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataEncryptionApp", "DataEn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvancedNumbersCalculator", "AdvancedNumbersCalculator\AdvancedNumbersCalculator.csproj", "{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSA", "RSA\RSA.csproj", "{34585BCC-B22A-4C52-BD5B-C050F0529715}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14D3B9C8-0A0A-4558-B43B-8EEAFC8792AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34585BCC-B22A-4C52-BD5B-C050F0529715}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34585BCC-B22A-4C52-BD5B-C050F0529715}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34585BCC-B22A-4C52-BD5B-C050F0529715}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34585BCC-B22A-4C52-BD5B-C050F0529715}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
