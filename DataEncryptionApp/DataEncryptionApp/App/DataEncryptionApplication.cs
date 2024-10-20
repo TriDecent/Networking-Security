@@ -1,26 +1,80 @@
+using System.Numerics;
 using DataEncryptionApp.DataAccess;
 using DataEncryptionApp.DataEncryption;
+using DataEncryptionApp.DataEncryption.AsymmetricCipher;
 using DataEncryptionApp.UI;
 
 namespace DataEncryptionApp.App;
 
-public class DataEncryptionApplication
+public interface IDataEncryptionApplication
+{
+  void Run();
+}
+
+public class RSADataEncryptionApplication : IDataEncryptionApplication
+{
+  private readonly DataEncryptionApplication _app;
+  private readonly RSAEncryption _dataEncryption; // tightly coupled
+  private readonly IUIHandler _uiHandler;
+
+  public RSADataEncryptionApplication(
+    DataEncryptionApplication app,
+    RSAEncryption dataEncryption,
+    IUIHandler uIHandler)
+  {
+    _app = app;
+    _dataEncryption = dataEncryption;
+    _uiHandler = uIHandler;
+  }
+
+
+  public void Run()
+  {
+    _uiHandler.DisplayMessage("Enter p, q and e values for RSA key generation!");
+    _uiHandler.DisplayMessage("Note: If you don't enter any values, random prime numbers will be generated.");
+
+    _uiHandler.DisplayMessage("Enter p:");
+    var pInput = _uiHandler.GetFromUser();
+    BigInteger? p = string.IsNullOrWhiteSpace(pInput) ? null : BigInteger.Parse(pInput);
+
+    _uiHandler.DisplayMessage("Enter q:");
+    var qInput = _uiHandler.GetFromUser();
+    BigInteger? q = string.IsNullOrWhiteSpace(qInput) ? null : BigInteger.Parse(qInput);
+
+    _uiHandler.DisplayMessage("Enter e:");
+    var eInput = _uiHandler.GetFromUser();
+    int e = string.IsNullOrWhiteSpace(eInput) ? 65537 : int.Parse(eInput);
+
+    _dataEncryption.GenerateKeyPair(p, q, e);
+    _app.Run();
+  }
+}
+public class DataEncryptionApplication : IDataEncryptionApplication
 {
   private readonly IDataEncryption _dataEncryption;
   private readonly ICrackingDataEncryption _crackingDataEncryption;
   private readonly IDataEncryptionRepository _dataEncryptionRepository;
   private readonly IDataEncryptionApplicationUI _uiHandler;
+  private readonly string _plainTextFilePath;
+  private readonly string _cipherTextFilePath;
+  private readonly string _crackedTextFilePath;
 
   public DataEncryptionApplication(
-      IDataEncryption dataEncryption,
-      ICrackingDataEncryption crackingDataEncryption,
-      IDataEncryptionRepository dataEncryptionRepository,
-      IDataEncryptionApplicationUI uiHandler)
+    IDataEncryption dataEncryption,
+    ICrackingDataEncryption crackingDataEncryption,
+    IDataEncryptionRepository dataEncryptionRepository,
+    IDataEncryptionApplicationUI uiHandler,
+    string plainTextFilePath,
+    string cipherTextFilePath,
+    string crackedTextFilePath)
   {
     _dataEncryption = dataEncryption;
     _crackingDataEncryption = crackingDataEncryption;
     _dataEncryptionRepository = dataEncryptionRepository;
     _uiHandler = uiHandler;
+    _plainTextFilePath = plainTextFilePath;
+    _cipherTextFilePath = cipherTextFilePath;
+    _crackedTextFilePath = crackedTextFilePath;
   }
 
   public void Run()
@@ -28,10 +82,6 @@ public class DataEncryptionApplication
     // Only change plainTextFilePath and cipherTextFilePath
     // The result of the encryption will be written to the cipherTextFilePath
     // The result of the decryption will be written to the crackedTextFilePath
-
-    string plainTextFilePath = "plainTextForVigenere.txt";
-    string cipherTextFilePath = "cipherTextForVigenere.txt";
-    string crackedTextFilePath = "crackedText.txt";
 
     bool isExit = false;
     _uiHandler.DisplayMessage("Welcome to Data Encryption Application!");
@@ -49,11 +99,11 @@ public class DataEncryptionApplication
 
       if (encryptionChoice == "1")
       {
-        HandleEncryption(userChoiceToWriteOrRead, plainTextFilePath, cipherTextFilePath);
+        HandleEncryption(userChoiceToWriteOrRead, _plainTextFilePath, _cipherTextFilePath);
       }
       else if (encryptionChoice == "2")
       {
-        HandleDecryption(userChoiceToWriteOrRead, crackedTextFilePath, cipherTextFilePath);
+        HandleDecryption(userChoiceToWriteOrRead, _crackedTextFilePath, _cipherTextFilePath);
       }
     }
   }

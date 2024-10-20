@@ -7,6 +7,11 @@ using DataEncryptionApp.DataEncryption.PlayFair;
 using DataEncryptionApp.DataEncryption.ShiftCipher;
 using DataEncryptionApp.UI;
 
+// Remember to change the file paths to the correct ones
+const string PlainTextFilePath = @"DataFiles/PlainText/plainText.txt";
+const string CipherTextFilePath = @"DataFiles/EncryptionFiles/cipherText.txt";
+const string CrackedTextFilePath = @"DataFiles/CrackedFiles/crackedText.txt";
+
 // Input from console can just be 1 block of text
 // Input from file can be multiple blocks of text
 
@@ -22,6 +27,7 @@ try
   uiHandler.DisplayMessage("Note: Caesar Encryption will be used for any incorrect input.");
   uiHandler.DisplayMessageWithoutNewLine("Enter choice (1/2/3/4): ");
   var choice = Console.ReadLine();
+  uiHandler.DisplayMessage(string.Empty);
 
   ICrackingDataEncryption currentEncryption = choice switch
   {
@@ -33,7 +39,8 @@ try
     _ => new CaesarEncryption()
   };
 
-  var dataEncryption = new DataEncryptionApplication(
+
+  var dataEncryptionApp = new DataEncryptionApplication(
     currentEncryption, // default 
     currentEncryption, // cracking
     new DataEncryptionRepository(
@@ -41,10 +48,26 @@ try
       currentEncryption, // cracking
       new TextualStringsRepository()
     ),
-    new DataEncryptionUI(uiHandler)
+    new DataEncryptionUI(uiHandler),
+    PlainTextFilePath,
+    CipherTextFilePath,
+    CrackedTextFilePath
   );
 
-  dataEncryption.Run();
+  if (choice == "5")
+  {
+    var rsaDataEncryptionApp = new RSADataEncryptionApplication(
+      dataEncryptionApp, 
+      new RSAEncryption(), 
+      uiHandler
+    );
+    
+    rsaDataEncryptionApp.Run();
+  }
+  else
+  {
+    dataEncryptionApp.Run();
+  }
 }
 catch (Exception ex)
 {
