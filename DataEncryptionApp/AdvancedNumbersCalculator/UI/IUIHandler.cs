@@ -1,4 +1,4 @@
-namespace DataEncryptionApp.AdvancedNumbersCalculator.UI;
+namespace AdvancedNumbersCalculator.UI;
 
 internal interface IUIHandler
 {

@@ -1,10 +1,9 @@
-using System.Collections;
 using System.Numerics;
-using DataEncryptionApp.AdvancedNumbersCalculator.Utilities;
+using AdvancedNumbersCalculator.Utilities;
 
-namespace DataEncryptionApp.AdvancedNumbersCalculator.LogicalMath;
+namespace AdvancedNumbersCalculator.LogicalMath;
 
-internal class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
+public class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
 {
   public T GenerateRandomPrimeNumber<T>() where T : INumber<T>
   {
@@ -155,7 +154,7 @@ internal class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
       }
       if (!continueLoop) return false;
     }
-    
+
     return true;
   }
 

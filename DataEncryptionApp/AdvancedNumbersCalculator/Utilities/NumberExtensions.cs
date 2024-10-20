@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace DataEncryptionApp.AdvancedNumbersCalculator.Utilities;
+namespace AdvancedNumbersCalculator.Utilities;
 
 public static class NumberExtensions
 {
@@ -19,7 +19,7 @@ public static class NumberExtensions
     if (value > 0)
     {
       int bitLength = (int)Math.Ceiling(BigInteger.Log(value, 2));
-      BigInteger root = BigInteger.One << (bitLength / 2);
+      BigInteger root = BigInteger.One << bitLength / 2;
 
       while (!IsSqrt(value, root))
       {

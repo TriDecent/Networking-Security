@@ -1,8 +1,8 @@
 using System.Numerics;
-using DataEncryptionApp.AdvancedNumbersCalculator.LogicalMath;
-using DataEncryptionApp.AdvancedNumbersCalculator.UI;
+using AdvancedNumbersCalculator.LogicalMath;
+using AdvancedNumbersCalculator.UI;
 
-namespace DataEncryptionApp.AdvancedNumbersCalculator.App;
+namespace AdvancedNumbersCalculator.App;
 
 internal class AdvancedNumbersCalculatorApp
 {

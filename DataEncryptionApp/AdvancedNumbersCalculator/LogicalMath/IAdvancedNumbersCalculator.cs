@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace DataEncryptionApp.AdvancedNumbersCalculator.LogicalMath;
+namespace AdvancedNumbersCalculator.LogicalMath;
 
 internal interface IAdvancedNumbersCalculator
 {

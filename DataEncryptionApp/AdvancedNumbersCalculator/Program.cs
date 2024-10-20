@@ -1,11 +1,10 @@
-﻿using DataEncryptionApp.AdvancedNumbersCalculator.App;
-using DataEncryptionApp.AdvancedNumbersCalculator.LogicalMath;
-using DataEncryptionApp.AdvancedNumbersCalculator.UI;
+﻿using AdvancedNumbersCalculator.App;
+using AdvancedNumbersCalculator.UI;
 
 try
 {
   var app = new AdvancedNumbersCalculatorApp(
-    new AdvancedNumbersCalculator(), 
+    new AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator(), 
     new ConsoleUIHandler()
   );
   app.Run();
