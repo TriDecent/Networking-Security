@@ -1,79 +1,104 @@
 using System.Numerics;
-using System.Text;
+using AdvancedNumbersCalculator.Utilities.Encoders;
 
 namespace DataEncryptionApp.DataEncryption.AsymmetricCipher;
 
 public class RSAEncryption : ICrackingDataEncryption
 {
-  private readonly AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator calculator;
+  private readonly AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator _calculator;
+  private readonly IEncoderDecoder _cipherTextEncoder;
+  private readonly IEncoderDecoder _plainTextEncoder;
 
   public int E { get; private set; } // Public exponent e
 
   public RSAEncryption()
   {
-    calculator = new AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator();
+    _calculator = new AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator();
+    _cipherTextEncoder = new Base64EncoderDecoder();
+    _plainTextEncoder = new UTF8EncoderDecoder();
+  }
+
+  public RSAEncryption(
+    AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator calculator,
+    IEncoderDecoder cipherTextEncoder,
+    IEncoderDecoder plainTextEncoder)
+  {
+    _calculator = calculator;
+    _cipherTextEncoder = cipherTextEncoder;
+    _plainTextEncoder = plainTextEncoder;
   }
 
   public string Encrypt(string plainText, string publicKey)
   {
-    // The checking of the input must be done in the UI layer
-
+    // Parse public key components: N and E
     var n = BigInteger.Parse(publicKey.Replace("(", "").Replace(")", "").Split(",")[0].Trim());
     var e = BigInteger.Parse(publicKey.Replace("(", "").Replace(")", "").Split(",")[1].Trim());
 
-    // Check if plaintext is numeric
-    if (!BigInteger.TryParse(plainText, out BigInteger plainNumber))
-    {
-      plainNumber = new BigInteger(Encoding.UTF8.GetBytes(plainText));
-    }
+    // Convert the entire plaintext into a byte array using UTF-8 encoding
+    var plainBytes = _plainTextEncoder.Decode(plainText);
 
-    // Ensure plainNumber is less than N
-    if (plainNumber >= n)
-    {
-      throw new ArgumentException("The message is too large to be encrypted with the current key.");
-    }
+    // Call the EncryptData method to handle the byte array encryption
+    byte[] encryptedData = EncryptData(plainBytes, n, e);
 
-    // Encryption: cipherText = (plainNumber^e) mod N
-    BigInteger cipherNumber = calculator.ComputeModularExponentiation(plainNumber, e, n);
+    // encryptedData.ToList().ForEach(x => Console.Write(x.ToString("X2") + " "));
 
-    // Return as base64 string
-    return Convert.ToBase64String(cipherNumber.ToByteArray());
+    // Convert the encrypted byte array to Base64
+    return _cipherTextEncoder.Encode(encryptedData);
   }
 
-
-  public string Decrypt(string cipherText, string privateKey)
+  private byte[] EncryptData(byte[] data, BigInteger n, BigInteger e)
   {
-    var n = BigInteger.Parse(privateKey.Replace("(", "").Replace(")", "").Split(",")[0].Trim());
-    var d = BigInteger.Parse(privateKey.Replace("(", "").Replace(")", "").Split(",")[1].Trim());
+    // Get the maximum size for each block in bytes
+    int blockSize = n.ToByteArray().Length - 1; // Max bytes for plaintext block
+    var blocks = new List<BigInteger>();
 
-    // Convert base64 cipherText to BigInteger
-    BigInteger cipherNumber = new(Convert.FromBase64String(cipherText));
+    // Split the byte array into blocks
+    for (int i = 0; i < data.Length; i += blockSize)
+    {
+      // Take the current block of bytes
+      var block = data.Skip(i).Take(Math.Min(blockSize, data.Length - i)).ToArray();
 
-    // Decryption: plainNumber = (cipherNumber^d) mod N
-    BigInteger plainNumber = calculator.ComputeModularExponentiation(cipherNumber, d, n);
+      // Ensure the block fits in BigInteger
+      if (block.Length > blockSize)
+      {
+        throw new ArgumentException("Block size exceeds the limit.");
+      }
 
-    // Convert back to string
-    return Encoding.UTF8.GetString(plainNumber.ToByteArray());
+      // Convert the byte array to BigInteger for encryption
+      BigInteger plainNumber = new(block);
+
+      // Perform encryption: cipherNumber = (plainNumber^e) mod N
+      BigInteger cipherNumber = _calculator.ComputeModularExponentiation(plainNumber, e, n);
+
+      // Add the cipherNumber to the blocks list
+      blocks.Add(cipherNumber);
+    }
+
+    // Convert each cipherNumber to a byte array
+    return blocks.SelectMany(cipher => cipher.ToByteArray()).ToArray();
   }
 
-  public void GenerateKeyPair(BigInteger? p = null, BigInteger? q = null, int e = 65537)
+
+
+  public void GenerateKeyPair(BigInteger? p = null, BigInteger? q = null, BigInteger? e = null)
   {
     // Use provided p, q, or generate them
-    p ??= calculator.GenerateRandomPrimeNumber<BigInteger>();
-    q ??= calculator.GenerateRandomPrimeNumber<BigInteger>();
+    p ??= _calculator.GenerateRandomPrimeNumber<BigInteger>();
+    q ??= _calculator.GenerateRandomPrimeNumber<BigInteger>();
+    var E = e ?? new BigInteger(65537);
 
     var N = p.Value * q.Value; // Compute n = p * q
     BigInteger phi = (p.Value - 1) * (q.Value - 1); // Compute φ(n) = (p-1)*(q-1)
-    var E = e;
+
 
     // Ensure that e is coprime with φ(n)
-    if (calculator.GetGCD(E, phi) != 1)
+    if (_calculator.GetGCD(E, phi) != 1)
     {
       throw new ArgumentException("e must be coprime with φ(n). Please choose a different 'e'.");
     }
 
     // Compute the modular inverse of e mod φ(n), which gives us the private exponent d
-    var D = calculator.ComputeModularInverse(E, phi);
+    var D = _calculator.ComputeModularInverse(E, phi);
 
     // Key generation is done; N and D can now be used for encryption and decryption.
 
@@ -82,9 +107,13 @@ public class RSAEncryption : ICrackingDataEncryption
     Console.WriteLine($"Private key: (N: {N}, D: {D})");
   }
 
-
   public IEnumerable<string> CrackingDecrypt(string cipherText)
   {
-    throw new NotImplementedException("Cracking RSA encryption is not implemented due to security reasons.");
+    throw new NotImplementedException();
   }
+
+    public string Decrypt(string cipherText, string key)
+    {
+        throw new NotImplementedException();
+    }
 }
