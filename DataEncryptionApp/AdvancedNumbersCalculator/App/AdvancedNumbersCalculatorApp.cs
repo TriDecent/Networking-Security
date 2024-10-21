@@ -77,8 +77,8 @@ internal class AdvancedNumbersCalculatorApp
     _uiHandler.ShowMessage("The greatest common divisor of 2 large numbers: ");
     _uiHandler.ShowMessage(
       _calculator.GetGCD(
-        BigInteger.Parse("987654321098765432109812312321321376543210"), // _uiHandler.GetInput()
-        BigInteger.Parse("123456789012345678123123123213901234567890") // _uiHandler.GetInput()
+        BigInteger.Parse(_uiHandler.GetInput()), // 987654321098765432109812312321321376543210
+        BigInteger.Parse(_uiHandler.GetInput())  // 123456789012345678901231231232132765432109
       ).ToString()
     );
   }
