@@ -78,7 +78,52 @@ public class RSAEncryption : ICrackingDataEncryption
     return blocks.SelectMany(cipher => cipher.ToByteArray()).ToArray();
   }
 
+  public string Decrypt(string cipherText, string privateKey)
+  {
+    // Parse private key components: N and D
+    var n = BigInteger.Parse(privateKey.Replace("(", "").Replace(")", "").Split(",")[0].Trim());
+    var d = BigInteger.Parse(privateKey.Replace("(", "").Replace(")", "").Split(",")[1].Trim());
 
+    // Convert the Base64 cipherText to a byte array
+    byte[] cipherBytes = _cipherTextEncoder.Decode(cipherText);
+    // cipherBytes.ToList().ForEach(x => Console.Write(x.ToString("X2") + " ")); 
+
+    Console.WriteLine();
+
+    // Call the DecryptData method to handle the byte array decryption
+    byte[] decryptedData = DecryptData(cipherBytes, n, d);
+
+    // decryptedData.ToList().ForEach(x => Console.Write(x.ToString("X2") + " "));
+
+    // Convert the decrypted byte array back to a string using UTF-8 encoding
+    return _plainTextEncoder.Encode(decryptedData);
+  }
+
+  private byte[] DecryptData(byte[] data, BigInteger n, BigInteger d)
+  {
+    var blocks = new List<BigInteger>();
+
+    // Split the byte array into blocks (BigInteger size)
+    int blockSize = n.ToByteArray().Length - 1; // Max bytes for plaintext block
+
+    for (int i = 0; i < data.Length; i += blockSize)
+    {
+      // Take the current block of bytes
+      var block = data.Skip(i).Take(Math.Min(blockSize, data.Length - i)).ToArray();
+
+      // Convert the byte array to BigInteger for decryption
+      BigInteger cipherNumber = new(block);
+
+      // Perform decryption: plainNumber = (cipherNumber^d) mod N
+      BigInteger plainNumber = _calculator.ComputeModularExponentiation(cipherNumber, d, n);
+
+      // Add the plainNumber to the blocks list
+      blocks.Add(plainNumber);
+    }
+
+    // Convert each plainNumber to a byte array and concatenate
+    return blocks.SelectMany(plain => plain.ToByteArray()).ToArray();
+  }
 
   public void GenerateKeyPair(BigInteger? p = null, BigInteger? q = null, BigInteger? e = null)
   {
@@ -111,9 +156,4 @@ public class RSAEncryption : ICrackingDataEncryption
   {
     throw new NotImplementedException();
   }
-
-    public string Decrypt(string cipherText, string key)
-    {
-        throw new NotImplementedException();
-    }
 }
