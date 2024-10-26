@@ -1,7 +1,7 @@
 using System.Numerics;
 using AdvancedNumbersCalculator.Utilities;
 
-namespace AdvancedNumbersCalculator.LogicalMath;
+namespace AdvancedNumbersCalculator.LogicalMath.DeprecatedCalculator;
 
 public class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
 {
@@ -193,24 +193,27 @@ public class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
     return result;
   }
 
-  public BigInteger ComputeModularInverse(BigInteger a, BigInteger m)
+  public T ComputeModularInverse<T>(T number, T modulus) where T : INumber<T>
   {
-    BigInteger m0 = m, t, q;
-    BigInteger x0 = 0, x1 = 1;
+    T m0 = modulus;
+    T t;
+    T q;
+    T x0 = T.Zero;
+    T x1 = T.One;
 
-    if (m == 1)
-      return 0;
+    if (modulus == T.One)
+      return T.Zero;
 
     // Apply extended Euclid Algorithm
-    while (a > 1)
+    while (number > T.One)
     {
       // q is quotient
-      q = a / m;
-      t = m;
+      q = number / modulus;
+      t = modulus;
 
       // m is remainder now, process same as Euclid's algo
-      m = a % m;
-      a = t;
+      modulus = number % modulus;
+      number = t;
       t = x0;
 
       x0 = x1 - q * x0;
@@ -218,7 +221,7 @@ public class AdvancedNumbersCalculator : IAdvancedNumbersCalculator
     }
 
     // Make x1 positive
-    if (x1 < 0)
+    if (x1 < T.Zero)
       x1 += m0;
 
     return x1;
