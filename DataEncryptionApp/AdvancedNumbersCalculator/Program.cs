@@ -1,10 +1,13 @@
 ﻿using AdvancedNumbersCalculator.App;
+using AdvancedNumbersCalculator.LogicalMath.PrimeNumbersCalculators;
+using AdvancedNumbersCalculator.LogicalMath.ModularArithmeticCalculators;
 using AdvancedNumbersCalculator.UI;
 
 try
 {
   var app = new AdvancedNumbersCalculatorApp(
-    new AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator(), 
+    new PrimeNumberCalculator(),
+    new ModularArithmeticCalculator(), 
     new ConsoleUIHandler()
   );
   app.Run();
