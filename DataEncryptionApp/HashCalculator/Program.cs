@@ -11,6 +11,13 @@ internal static class Program
     // To customize application configuration such as set high DPI settings or default font,
     // see https://aka.ms/applicationconfiguration.
     ApplicationConfiguration.Initialize();
-    Application.Run(new HashCalculatorForm());
+    try
+    {
+      Application.Run(new HashCalculatorForm());
+    }
+    catch (Exception ex)
+    {
+      MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
   }
 }
