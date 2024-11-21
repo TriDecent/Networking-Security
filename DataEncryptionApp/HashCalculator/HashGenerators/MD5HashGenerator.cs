@@ -1,13 +1,7 @@
-﻿using System.CodeDom.Compiler;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace HashCalculator;
-
-internal interface IHashGenerator
-{
-  string GenerateHash(string data, DataFormat dataFormat);
-}
 
 public class MD5HashGenerator : IHashGenerator
 {

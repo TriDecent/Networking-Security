@@ -1,6 +1,6 @@
 ﻿namespace HashCalculator;
 
-public enum HashType
+public enum HashAlgorithm
 {
   MD5,
   SHA1,
