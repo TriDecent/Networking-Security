@@ -1,11 +1,14 @@
 using System.Numerics;
 using AdvancedNumbersCalculator.Utilities.Encoders;
+using AdvancedNumbersCalculator.LogicalMath.PrimeNumbersCalculators;
+using AdvancedNumbersCalculator.LogicalMath.ModularArithmeticCalculators;
 
 namespace DataEncryptionApp.DataEncryption.AsymmetricCipher;
 
 public class RSAEncryption : ICrackingDataEncryption
 {
-  private readonly AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator _calculator;
+  private readonly IPrimeNumberCalculator _primeNumberCalculator;
+  private readonly IModularArithmeticCalculator _modularArithmeticCalculator;
   private readonly IEncoderDecoder _cipherTextEncoder;
   private readonly IEncoderDecoder _plainTextEncoder;
 
@@ -13,17 +16,20 @@ public class RSAEncryption : ICrackingDataEncryption
 
   public RSAEncryption()
   {
-    _calculator = new AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator();
+    _primeNumberCalculator = new PrimeNumberCalculator();
+    _modularArithmeticCalculator = new ModularArithmeticCalculator();
     _cipherTextEncoder = new Base64EncoderDecoder();
     _plainTextEncoder = new UTF8EncoderDecoder();
   }
 
   public RSAEncryption(
-    AdvancedNumbersCalculator.LogicalMath.AdvancedNumbersCalculator calculator,
+    IPrimeNumberCalculator primeNumberCalculator,
+    IModularArithmeticCalculator modularArithmeticCalculator,
     IEncoderDecoder cipherTextEncoder,
     IEncoderDecoder plainTextEncoder)
   {
-    _calculator = calculator;
+    _primeNumberCalculator = primeNumberCalculator;
+    _modularArithmeticCalculator = modularArithmeticCalculator;
     _cipherTextEncoder = cipherTextEncoder;
     _plainTextEncoder = plainTextEncoder;
   }
@@ -68,7 +74,7 @@ public class RSAEncryption : ICrackingDataEncryption
       BigInteger plainNumber = new(block);
 
       // Perform encryption: cipherNumber = (plainNumber^e) mod N
-      BigInteger cipherNumber = _calculator.ComputeModularExponentiation(plainNumber, e, n);
+      BigInteger cipherNumber = _modularArithmeticCalculator.ComputeModularExponentiation(plainNumber, e, n);
 
       // Add the cipherNumber to the blocks list
       blocks.Add(cipherNumber);
@@ -88,7 +94,7 @@ public class RSAEncryption : ICrackingDataEncryption
     byte[] cipherBytes = _cipherTextEncoder.Decode(cipherText);
     // cipherBytes.ToList().ForEach(x => Console.Write(x.ToString("X2") + " ")); 
 
-    Console.WriteLine();
+    // Console.WriteLine();
 
     // Call the DecryptData method to handle the byte array decryption
     byte[] decryptedData = DecryptData(cipherBytes, n, d);
@@ -104,7 +110,7 @@ public class RSAEncryption : ICrackingDataEncryption
     var blocks = new List<BigInteger>();
 
     // Split the byte array into blocks (BigInteger size)
-    int blockSize = n.ToByteArray().Length - 1; // Max bytes for plaintext block
+    int blockSize = 512; // Max bytes for plaintext block
 
     for (int i = 0; i < data.Length; i += blockSize)
     {
@@ -115,7 +121,7 @@ public class RSAEncryption : ICrackingDataEncryption
       BigInteger cipherNumber = new(block);
 
       // Perform decryption: plainNumber = (cipherNumber^d) mod N
-      BigInteger plainNumber = _calculator.ComputeModularExponentiation(cipherNumber, d, n);
+      BigInteger plainNumber = _modularArithmeticCalculator.ComputeModularExponentiation(cipherNumber, d, n);
 
       // Add the plainNumber to the blocks list
       blocks.Add(plainNumber);
@@ -128,8 +134,8 @@ public class RSAEncryption : ICrackingDataEncryption
   public void GenerateKeyPair(BigInteger? p = null, BigInteger? q = null, BigInteger? e = null)
   {
     // Use provided p, q, or generate them
-    p ??= _calculator.GenerateRandomPrimeNumber<BigInteger>();
-    q ??= _calculator.GenerateRandomPrimeNumber<BigInteger>();
+    p ??= _primeNumberCalculator.GenerateRandomPrimeNumber<BigInteger>();
+    q ??= _primeNumberCalculator.GenerateRandomPrimeNumber<BigInteger>();
     var E = e ?? new BigInteger(65537);
 
     var N = p.Value * q.Value; // Compute n = p * q
@@ -137,13 +143,13 @@ public class RSAEncryption : ICrackingDataEncryption
 
 
     // Ensure that e is coprime with φ(n)
-    if (_calculator.GetGCD(E, phi) != 1)
+    if (_modularArithmeticCalculator.GetGCD(E, phi) != 1)
     {
       throw new ArgumentException("e must be coprime with φ(n). Please choose a different 'e'.");
     }
 
     // Compute the modular inverse of e mod φ(n), which gives us the private exponent d
-    var D = _calculator.ComputeModularInverse(E, phi);
+    var D = _modularArithmeticCalculator.ComputeModularInverse(E, phi);
 
     // Key generation is done; N and D can now be used for encryption and decryption.
 
