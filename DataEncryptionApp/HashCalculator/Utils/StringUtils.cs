@@ -11,7 +11,7 @@ public static class StringUtils
 
     if (hex.Length % 2 != 0)
     {
-      throw new InvalidOperationException("Hex string must have an even length");
+      throw new FormatException("Hex string must have an even length");
     }
 
     byte[] bytes = new byte[hex.Length / 2];
