@@ -1,6 +1,7 @@
 using HashCalculator.Enums;
 using HashCalculator.Utils;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace HashCalculator.HashGenerators;
 
@@ -17,7 +18,7 @@ internal class SHA1HashGenerator : IHashGenerator
 
   private static string GenerateHashFromText(string data)
   {
-    var hash = SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(data));
+    var hash = SHA1.HashData(Encoding.UTF8.GetBytes(data));
     return BitConverter.ToString(hash).Replace("-", string.Empty);
   }
 

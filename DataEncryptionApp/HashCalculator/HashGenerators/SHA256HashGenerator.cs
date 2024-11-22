@@ -1,6 +1,7 @@
 using HashCalculator.Enums;
 using HashCalculator.Utils;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace HashCalculator.HashGenerators;
 
@@ -17,22 +18,22 @@ internal class SHA256HashGenerator : IHashGenerator
 
   private static string GenerateHashFromText(string data)
   {
-    var bytes = System.Text.Encoding.UTF8.GetBytes(data);
+    var bytes = Encoding.UTF8.GetBytes(data);
     var hash = SHA256.HashData(bytes);
-    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+    return BitConverter.ToString(hash).Replace("-", "");
   }
 
   private static string GenerateHashFromHex(string data)
   {
     var bytes = data.HexToBytes();
     var hash = SHA256.HashData(bytes);
-    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+    return BitConverter.ToString(hash).Replace("-", "");
   }
 
   private static string GenerateHashFromFile(string data)
   {
     var bytes = File.ReadAllBytes(data);
     var hash = SHA256.HashData(bytes);
-    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+    return BitConverter.ToString(hash).Replace("-", "");
   }
 }

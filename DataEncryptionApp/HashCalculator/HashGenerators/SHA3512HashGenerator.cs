@@ -1,3 +1,4 @@
+using System.Text;
 using HashCalculator.Enums;
 using HashCalculator.Utils;
 using SHA3.Net;
@@ -17,13 +18,15 @@ internal class SHA3_512HashGenerator : IHashGenerator
 
   private static string GenerateHashFromText(string data)
   {
-    var hash = Sha3.Sha3512().ComputeHash(System.Text.Encoding.UTF8.GetBytes(data));
+    var bytes = Encoding.UTF8.GetBytes(data);
+    var hash = Sha3.Sha3512().ComputeHash(bytes);
     return BitConverter.ToString(hash).Replace("-", string.Empty);
   }
 
   private static string GenerateHashFromHex(string data)
   {
-    var hash = Sha3.Sha3512().ComputeHash(data.HexToBytes());
+    var bytes = data.HexToBytes();
+    var hash = Sha3.Sha3512().ComputeHash(bytes);
     return BitConverter.ToString(hash).Replace("-", string.Empty);
   }
 
