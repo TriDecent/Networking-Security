@@ -42,6 +42,10 @@ public partial class HashCalculatorForm : Form
     _cbUseMD5.CheckedChanged += OnDataChanged;
     _cbUseSHA1.CheckedChanged += OnDataChanged;
     _cbUseSHA256.CheckedChanged += OnDataChanged;
+
+    _cbUseMD5.CheckedChanged += OnCheckedChanged;
+    _cbUseSHA1.CheckedChanged += OnCheckedChanged;
+    _cbUseSHA256.CheckedChanged += OnCheckedChanged;
   }
 
   private void OnDataFormatChanged(object? sender, EventArgs e)
@@ -63,34 +67,38 @@ public partial class HashCalculatorForm : Form
 
   private void OnDataChanged(object? sender, EventArgs e)
   {
-    var useMD5 = _cbUseMD5.Checked;
-    var useSHA1 = _cbUseSHA1.Checked;
-    var useSHA2 = _cbUseSHA256.Checked;
-
-    if (useMD5)
+    if (string.IsNullOrWhiteSpace(_txtData.Text))
     {
-      var _hashGenerator = new MD5HashGenerator();
-      try { _txtMD5Hash.Text = _hashGenerator.GenerateHash(_txtData.Text, _dataFormat); }
-      catch (InvalidOperationException ex)
-      {
-        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-      }
-      catch (FormatException ex)
-      {
-        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-      }
+      ClearHashFields();
+      return;
     }
 
-    if (useSHA1)
+    try
     {
-      var _hashGenerator = new SHA1HashGenerator();
-      _txtSHA1Hash.Text = _hashGenerator.GenerateHash(_txtData.Text, _dataFormat);
+      if (_cbUseMD5.Checked) _txtMD5Hash.Text = GenerateHash(new MD5HashGenerator());
+      if (_cbUseSHA1.Checked) _txtSHA1Hash.Text = GenerateHash(new SHA1HashGenerator());
+      if (_cbUseSHA256.Checked) _txtSHA2Hash.Text = GenerateHash(new SHA256HashGenerator());
     }
+    catch (Exception ex) when (ex is InvalidOperationException || ex is FormatException)
+    {
+      MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+  }
 
-    if (useSHA2)
-    {
-      var _hashGenerator = new SHA256HashGenerator();
-      _txtSHA2Hash.Text = _hashGenerator.GenerateHash(_txtData.Text, _dataFormat);
-    }
+  private void ClearHashFields()
+  {
+    _txtMD5Hash.Text = string.Empty;
+    _txtSHA1Hash.Text = string.Empty;
+    _txtSHA2Hash.Text = string.Empty;
+  }
+
+  private string GenerateHash(IHashGenerator hashGenerator)
+    => hashGenerator.GenerateHash(_txtData.Text, _dataFormat);
+
+  private void OnCheckedChanged(object? sender, EventArgs e)
+  {
+    _txtMD5Hash.Text = _cbUseMD5.Checked ? _txtMD5Hash.Text : string.Empty;
+    _txtSHA1Hash.Text = _cbUseSHA1.Checked ? _txtSHA1Hash.Text : string.Empty;
+    _txtSHA2Hash.Text = _cbUseSHA256.Checked ? _txtSHA2Hash.Text : string.Empty;
   }
 }
