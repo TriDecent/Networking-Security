@@ -1,7 +1,9 @@
+using HashCalculator.Enums;
+using HashCalculator.Utils;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace HashCalculator;
+namespace HashCalculator.HashGenerators;
 
 public class MD5HashGenerator : IHashGenerator
 {

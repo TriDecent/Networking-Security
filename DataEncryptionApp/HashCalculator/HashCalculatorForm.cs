@@ -1,5 +1,5 @@
-using System.Drawing.Text;
-using System.Security.AccessControl;
+using HashCalculator.Enums;
+using HashCalculator.HashGenerators;
 
 namespace HashCalculator;
 
@@ -16,7 +16,7 @@ public partial class HashCalculatorForm : Form
 
   private readonly CheckBox _cbUseMD5;
   private readonly CheckBox _cbUseSHA1;
-  private readonly CheckBox _cbUseSHA2;
+  private readonly CheckBox _cbUseSHA256;
 
   private DataFormat _dataFormat;
 
@@ -28,10 +28,10 @@ public partial class HashCalculatorForm : Form
     _lblData = lblData;
     _txtMD5Hash = txtMD5Hash;
     _txtSHA1Hash = txtSHA1Hash;
-    _txtSHA2Hash = txtSHA2Hash;
+    _txtSHA2Hash = txtSHA256Hash;
     _cbUseMD5 = cbMD5;
     _cbUseSHA1 = cbSHA1;
-    _cbUseSHA2 = cbSHA2;
+    _cbUseSHA256 = cbSHA256;
     _cbDataFormat = cbDataFormat;
 
     _cbDataFormat.DataSource = Enum.GetValues(typeof(DataFormat));
@@ -41,7 +41,7 @@ public partial class HashCalculatorForm : Form
     _txtData.TextChanged += OnDataChanged;
     _cbUseMD5.CheckedChanged += OnDataChanged;
     _cbUseSHA1.CheckedChanged += OnDataChanged;
-    _cbUseSHA2.CheckedChanged += OnDataChanged;
+    _cbUseSHA256.CheckedChanged += OnDataChanged;
   }
 
   private void OnDataFormatChanged(object? sender, EventArgs e)
@@ -65,7 +65,7 @@ public partial class HashCalculatorForm : Form
   {
     var useMD5 = _cbUseMD5.Checked;
     var useSHA1 = _cbUseSHA1.Checked;
-    var useSHA2 = _cbUseSHA2.Checked;
+    var useSHA2 = _cbUseSHA256.Checked;
 
     if (useMD5)
     {
@@ -89,7 +89,7 @@ public partial class HashCalculatorForm : Form
 
     if (useSHA2)
     {
-      var _hashGenerator = new SHA2HashGenerator();
+      var _hashGenerator = new SHA256HashGenerator();
       _txtSHA2Hash.Text = _hashGenerator.GenerateHash(_txtData.Text, _dataFormat);
     }
   }

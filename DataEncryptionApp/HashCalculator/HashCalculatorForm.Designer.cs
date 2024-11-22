@@ -30,10 +30,10 @@ partial class HashCalculatorForm
   {
     cbMD5 = new CheckBox();
     cbSHA1 = new CheckBox();
-    cbSHA2 = new CheckBox();
+    cbSHA256 = new CheckBox();
     txtMD5Hash = new TextBox();
     txtSHA1Hash = new TextBox();
-    txtSHA2Hash = new TextBox();
+    txtSHA256Hash = new TextBox();
     lblDataFormat = new Label();
     lblData = new Label();
     txtData = new TextBox();
@@ -62,16 +62,16 @@ partial class HashCalculatorForm
     cbSHA1.Text = "SHA-1";
     cbSHA1.UseVisualStyleBackColor = true;
     // 
-    // cbSHA2
+    // cbSHA256
     // 
-    cbSHA2.AutoSize = true;
-    cbSHA2.Font = new Font("Segoe UI", 12F);
-    cbSHA2.Location = new Point(26, 257);
-    cbSHA2.Name = "cbSHA2";
-    cbSHA2.Size = new Size(74, 25);
-    cbSHA2.TabIndex = 2;
-    cbSHA2.Text = "SHA-2";
-    cbSHA2.UseVisualStyleBackColor = true;
+    cbSHA256.AutoSize = true;
+    cbSHA256.Font = new Font("Segoe UI", 12F);
+    cbSHA256.Location = new Point(26, 257);
+    cbSHA256.Name = "cbSHA256";
+    cbSHA256.Size = new Size(92, 25);
+    cbSHA256.TabIndex = 2;
+    cbSHA256.Text = "SHA-256";
+    cbSHA256.UseVisualStyleBackColor = true;
     // 
     // txtMD5Hash
     // 
@@ -91,14 +91,14 @@ partial class HashCalculatorForm
     txtSHA1Hash.Size = new Size(632, 29);
     txtSHA1Hash.TabIndex = 0;
     // 
-    // txtSHA2Hash
+    // txtSHA256Hash
     // 
-    txtSHA2Hash.Font = new Font("Segoe UI", 12F);
-    txtSHA2Hash.Location = new Point(132, 255);
-    txtSHA2Hash.Name = "txtSHA2Hash";
-    txtSHA2Hash.ReadOnly = true;
-    txtSHA2Hash.Size = new Size(632, 29);
-    txtSHA2Hash.TabIndex = 3;
+    txtSHA256Hash.Font = new Font("Segoe UI", 12F);
+    txtSHA256Hash.Location = new Point(132, 255);
+    txtSHA256Hash.Name = "txtSHA256Hash";
+    txtSHA256Hash.ReadOnly = true;
+    txtSHA256Hash.Size = new Size(632, 29);
+    txtSHA256Hash.TabIndex = 3;
     // 
     // lblDataFormat
     // 
@@ -148,10 +148,10 @@ partial class HashCalculatorForm
     Controls.Add(txtData);
     Controls.Add(lblData);
     Controls.Add(lblDataFormat);
-    Controls.Add(txtSHA2Hash);
+    Controls.Add(txtSHA256Hash);
     Controls.Add(txtSHA1Hash);
     Controls.Add(txtMD5Hash);
-    Controls.Add(cbSHA2);
+    Controls.Add(cbSHA256);
     Controls.Add(cbSHA1);
     Controls.Add(cbMD5);
     FormBorderStyle = FormBorderStyle.Fixed3D;
@@ -166,10 +166,10 @@ partial class HashCalculatorForm
 
   private CheckBox cbMD5;
   private CheckBox cbSHA1;
-  private CheckBox cbSHA2;
+  private CheckBox cbSHA256;
   private TextBox txtMD5Hash;
   private TextBox txtSHA1Hash;
-  private TextBox txtSHA2Hash;
+  private TextBox txtSHA256Hash;
   private Label lblDataFormat;
   private Label lblData;
   private TextBox txtData;

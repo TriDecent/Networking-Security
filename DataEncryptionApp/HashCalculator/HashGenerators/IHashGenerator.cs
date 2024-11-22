@@ -1,4 +1,6 @@
-﻿namespace HashCalculator;
+﻿using HashCalculator.Enums;
+
+namespace HashCalculator.HashGenerators;
 
 internal interface IHashGenerator
 {

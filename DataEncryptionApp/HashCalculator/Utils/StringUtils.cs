@@ -1,4 +1,4 @@
-namespace HashCalculator;
+namespace HashCalculator.Utils;
 
 public static class StringUtils
 {
