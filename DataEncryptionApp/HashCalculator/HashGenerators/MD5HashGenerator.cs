@@ -18,46 +18,22 @@ public class MD5HashGenerator : IHashGenerator
 
   private static string GenerateHashFromText(string data)
   {
-    using MD5 md5 = MD5.Create();
-
     var inputBytes = Encoding.UTF8.GetBytes(data);
     var hashBytes = MD5.HashData(inputBytes);
-    var stringBuilder = new StringBuilder();
-    for (int i = 0; i < hashBytes.Length; i++)
-    {
-      stringBuilder.Append(hashBytes[i].ToString("X2"));
-    }
-
-    return stringBuilder.ToString();
+    return BitConverter.ToString(hashBytes).Replace("-", "");
   }
 
   private static string GenerateHashFromHex(string hexString)
   {
-    using MD5 md5 = MD5.Create();
-
     var inputBytes = hexString.HexToBytes();
     var hashBytes = MD5.HashData(inputBytes);
-    var stringBuilder = new StringBuilder();
-    for (int i = 0; i < hashBytes.Length; i++)
-    {
-      stringBuilder.Append(hashBytes[i].ToString("X2"));
-    }
-
-    return stringBuilder.ToString();
+    return BitConverter.ToString(hashBytes).Replace("-", "");
   }
 
   private static string GenerateHashFromFile(string filePath)
   {
-    using MD5 md5 = MD5.Create();
-
     var inputBytes = File.ReadAllBytes(filePath);
     var hashBytes = MD5.HashData(inputBytes);
-    var stringBuilder = new StringBuilder();
-    for (int i = 0; i < hashBytes.Length; i++)
-    {
-      stringBuilder.Append(hashBytes[i].ToString("X2"));
-    }
-
-    return stringBuilder.ToString();
+    return BitConverter.ToString(hashBytes).Replace("-", "");
   }
 }
