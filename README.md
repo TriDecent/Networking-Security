@@ -64,7 +64,6 @@ For optimal performance, use an encryption key of 1024 bits or higher (better us
 ## Structure
 
 - `Enums/`: Contains enumeration types used by the application.
-- `Forms/`: Contains form components for the user interface.
 - `HashGenerators/`: Contains hash generation logic.
 - `Utils/`: Contains utility functions.
 - `Program.cs`: The main entry point of the application.
