@@ -4,8 +4,9 @@
 
 This repository contains two main applications:
 
-1. **DataEncryptionApp**: An application focused on data encryption and decryption.
-2. **AdvancedNumbersCalculator**: An application for performing advanced mathematical calculations.
+1. **DataEncryptionApp**: An application focused on encrypting and decrypting data from string input or files.
+2. **AdvancedNumbersCalculator**: An application for performing advanced mathematical calculations (better suited as a library, the app is just for showcase).
+3. **HashCalculator**: An application for calculating various hash values from text, hex and files.
 
 ## DataEncryptionApp
 
@@ -33,7 +34,7 @@ This repository contains two main applications:
 
 ### Note on Using RSA Encryption
 
-For optimal performance, use an encryption key of 1024 bits or higher (better use the default 4096 bits). Using smaller keys may result in incorrect decryption outcomes.
+For optimal performance, use an encryption key of 1024 bits or higher (better use the default 4096 bits). Using smaller keys may result in incorrect decryption outcomes. The public or private key must be in the format (n, e) or (n, d) respectively.
 
 ## AdvancedNumbersCalculator
 
@@ -57,3 +58,31 @@ For optimal performance, use an encryption key of 1024 bits or higher (better us
    ```sh
    dotnet run --project AdvancedNumbersCalculator/AdvancedNumbersCalculator.csproj
    ```
+
+# HashCalculator
+
+## Structure
+
+- `Enums/`: Contains enumeration types used by the application.
+- `Forms/`: Contains form components for the user interface.
+- `HashGenerators/`: Contains hash generation logic.
+- `Utils/`: Contains utility functions.
+- `Program.cs`: The main entry point of the application.
+
+## How to Build and Run
+
+1. **Build the Application**:
+
+   ```sh
+   dotnet build HashCalculator/HashCalculator.csproj
+   ```
+
+2. **Run the Application**:
+
+   ```sh
+   dotnet run --project HashCalculator/HashCalculator.csproj
+   ```
+
+### Note on Using RSA Encryption
+
+HashCalculator is a Windows Forms application. Ensure you have a compatible environment to run Windows Forms applications.
