@@ -30,9 +30,9 @@ internal class SHA3_512HashGenerator : IHashGenerator
     return BitConverter.ToString(hash).Replace("-", string.Empty);
   }
 
-  private static string GenerateHashFromFile(string data)
+  private static string GenerateHashFromFile(string filePath)
   {
-    var bytes = File.ReadAllBytes(data);
+    var bytes = File.ReadAllBytes(filePath);
     var hash = Sha3.Sha3512().ComputeHash(bytes);
     return BitConverter.ToString(hash).Replace("-", string.Empty);
   }

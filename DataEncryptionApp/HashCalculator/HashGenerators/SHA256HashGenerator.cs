@@ -30,9 +30,9 @@ internal class SHA256HashGenerator : IHashGenerator
     return BitConverter.ToString(hash).Replace("-", "");
   }
 
-  private static string GenerateHashFromFile(string data)
+  private static string GenerateHashFromFile(string filePath)
   {
-    var bytes = File.ReadAllBytes(data);
+    var bytes = File.ReadAllBytes(filePath);
     var hash = SHA256.HashData(bytes);
     return BitConverter.ToString(hash).Replace("-", "");
   }

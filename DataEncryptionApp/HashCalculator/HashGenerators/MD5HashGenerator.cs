@@ -23,9 +23,9 @@ public class MD5HashGenerator : IHashGenerator
     return BitConverter.ToString(hashBytes).Replace("-", "");
   }
 
-  private static string GenerateHashFromHex(string hexString)
+  private static string GenerateHashFromHex(string data)
   {
-    var inputBytes = hexString.HexToBytes();
+    var inputBytes = data.HexToBytes();
     var hashBytes = MD5.HashData(inputBytes);
     return BitConverter.ToString(hashBytes).Replace("-", "");
   }

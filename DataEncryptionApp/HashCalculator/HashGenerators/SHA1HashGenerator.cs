@@ -28,9 +28,9 @@ internal class SHA1HashGenerator : IHashGenerator
     return BitConverter.ToString(hash).Replace("-", string.Empty);
   }
 
-  private static string GenerateHashFromFile(string data)
+  private static string GenerateHashFromFile(string filePath)
   {
-    using var stream = File.OpenRead(data);
+    using var stream = File.OpenRead(filePath);
     var hash = SHA1.HashData(stream);
     return BitConverter.ToString(hash).Replace("-", string.Empty);
   }
