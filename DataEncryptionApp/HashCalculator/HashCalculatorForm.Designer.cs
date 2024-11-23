@@ -28,6 +28,7 @@ partial class HashCalculatorForm
   /// </summary>
   private void InitializeComponent()
   {
+    System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HashCalculatorForm));
     cbMD5 = new CheckBox();
     cbSHA1 = new CheckBox();
     cbSHA256 = new CheckBox();
@@ -179,9 +180,10 @@ partial class HashCalculatorForm
     Controls.Add(cbSHA1);
     Controls.Add(cbMD5);
     FormBorderStyle = FormBorderStyle.Fixed3D;
-    MinimizeBox = false;
+    Icon = (Icon)resources.GetObject("$this.Icon");
+    MaximizeBox = false;
     Name = "HashCalculatorForm";
-    Text = "Hash Code Generator";
+    Text = "Hash Calculator";
     ResumeLayout(false);
     PerformLayout();
   }
