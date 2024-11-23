@@ -57,7 +57,7 @@ public partial class HashCalculatorForm : Form
 
   private void OnDataFormatChanged(object? sender, EventArgs e)
   {
-    _dataFormat = (DataFormat)Enum.Parse(typeof(DataFormat), _cbDataFormat.SelectedItem?.ToString()!);
+    _dataFormat = (DataFormat)_cbDataFormat.SelectedItem!;
 
     if (_dataFormat == DataFormat.File)
     {
@@ -69,7 +69,14 @@ public partial class HashCalculatorForm : Form
       {
         _txtData.Text = openFileDialog.FileName;
       }
+
+      return;
     }
+
+    _lblData.Text = "Data";
+    _txtData.ReadOnly = false;
+    _txtData.Text = string.Empty;
+    ClearHashFields();
   }
 
   private void OnDataChanged(object? sender, EventArgs e)
