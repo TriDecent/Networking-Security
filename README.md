@@ -1,4 +1,4 @@
-# DataEncryptionApp and AdvancedNumbersCalculator
+# DataEncryptionApp - AdvancedNumbersCalculator - HashCalculator
 
 ## Overview
 
@@ -82,6 +82,6 @@ For optimal performance, use an encryption key of 1024 bits or higher (better us
    dotnet run --project HashCalculator/HashCalculator.csproj
    ```
 
-### Note on Using RSA Encryption
+### Note on Using Hash Calculator
 
 HashCalculator is a Windows Forms application. Ensure you have a compatible environment to run Windows Forms applications.
