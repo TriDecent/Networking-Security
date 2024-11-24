@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains two main applications:
+This repository contains three main applications:
 
 1. **DataEncryptionApp**: An application focused on encrypting and decrypting data from string input or files.
 2. **AdvancedNumbersCalculator**: An application for performing advanced mathematical calculations (better suited as a library, the app is just for showcase).
