@@ -1,6 +1,6 @@
 ﻿namespace CryptographicApp
 {
-  partial class CryptographicForm
+  partial class PlayFairForm
   {
     /// <summary>
     /// Required designer variable.
@@ -28,17 +28,17 @@
     /// </summary>
     private void InitializeComponent()
     {
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CryptographicForm));
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PlayFairForm));
       SuspendLayout();
       // 
-      // CryptographicForm
+      // PlayFairForm
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       ClientSize = new Size(800, 450);
       Icon = (Icon)resources.GetObject("$this.Icon");
-      Name = "CryptographicForm";
-      Text = "Cryptography";
+      Name = "PlayFairForm";
+      Text = "PlayFair";
       ResumeLayout(false);
     }
 

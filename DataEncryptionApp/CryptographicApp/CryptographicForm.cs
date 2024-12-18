@@ -1,34 +1,38 @@
-using System.Security.Cryptography;
-
-namespace CryptographicApp;
+﻿namespace CryptographicApp;
 
 public partial class CryptographicForm : Form
 {
-  private readonly Button _btnBrowse, _btnGenerateKey, _btnImportKey;
-  private readonly Button _btnEncrypt, _btnDecrypt;
-  private readonly ComboBox _cbDataFormat, _cbPadding;
-  private readonly TextBox _txtDataOrFilePath, _txtResult;
+  private Form _activeForm;
 
   public CryptographicForm()
   {
     InitializeComponent();
 
-    _btnBrowse = btnBrowse;
-    _btnGenerateKey = btnGenerateKey;
-    _btnImportKey = btnImportKey;
-    _btnEncrypt = btnEncrypt;
-    _cbDataFormat = cbDataFormat;
-    _cbPadding = cbPadding;
-    _txtDataOrFilePath = txtDataOrFilePath;
-    _txtResult = txtResult;
+    IsMdiContainer = true; 
 
-    _cbDataFormat.DataSource = Enum.GetValues<DataFormat>();
-    _cbPadding.DataSource = new[]
-    {
-      RSAEncryptionPadding.Pkcs1, RSAEncryptionPadding.OaepSHA1,
-      RSAEncryptionPadding.OaepSHA256, RSAEncryptionPadding.OaepSHA384,
-      RSAEncryptionPadding.OaepSHA512, RSAEncryptionPadding.OaepSHA3_256,
-      RSAEncryptionPadding.OaepSHA3_384, RSAEncryptionPadding.OaepSHA3_512
-    };
+    var toolStrip = new ToolStrip();
+
+    var btnRSA = new ToolStripButton("RSA");
+    var btnPlayFair = new ToolStripButton("PlayFair");
+
+    toolStrip.Items.AddRange([btnRSA, btnPlayFair]);
+
+    OpenForm(new RSAForm());
+
+    btnRSA.Click += (s, e) => OpenForm(new RSAForm());
+    btnPlayFair.Click += (s,e) => OpenForm(new PlayFairForm());
+
+    Controls.Add(toolStrip);
+  }
+
+  private void OpenForm(Form form)
+  {
+    _activeForm?.Close();
+
+    _activeForm = form;
+    form.MdiParent = this;
+    form.FormBorderStyle = FormBorderStyle.Fixed3D;
+    form.Dock = DockStyle.None;
+    form.Show();
   }
 }
