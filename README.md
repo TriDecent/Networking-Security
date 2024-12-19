@@ -1,8 +1,8 @@
-# DataEncryptionApp and AdvancedNumbersCalculator
+# DataEncryptionApp - AdvancedNumbersCalculator - HashCalculator
 
 ## Overview
 
-This repository contains two main applications:
+This repository contains three main applications:
 
 1. **DataEncryptionApp**: An application focused on encrypting and decrypting data from string input or files.
 2. **AdvancedNumbersCalculator**: An application for performing advanced mathematical calculations (better suited as a library, the app is just for showcase).
@@ -82,6 +82,6 @@ For optimal performance, use an encryption key of 1024 bits or higher (better us
    dotnet run --project HashCalculator/HashCalculator.csproj
    ```
 
-### Note on Using RSA Encryption
+### Note on Using Hash Calculator
 
 HashCalculator is a Windows Forms application. Ensure you have a compatible environment to run Windows Forms applications.
