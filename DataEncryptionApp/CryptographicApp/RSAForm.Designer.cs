@@ -36,7 +36,7 @@
       btnImportKey = new Button();
       btnGenerateKey = new Button();
       btnBrowse = new Button();
-      progressBar1 = new ProgressBar();
+      progressBar = new ProgressBar();
       lblProgress = new Label();
       lblTimeTook = new Label();
       txtResult = new TextBox();
@@ -120,12 +120,12 @@
       btnBrowse.Text = "Browse";
       btnBrowse.UseVisualStyleBackColor = true;
       // 
-      // progressBar1
+      // progressBar
       // 
-      progressBar1.Location = new Point(89, 268);
-      progressBar1.Name = "progressBar1";
-      progressBar1.Size = new Size(560, 23);
-      progressBar1.TabIndex = 16;
+      progressBar.Location = new Point(89, 268);
+      progressBar.Name = "progressBar";
+      progressBar.Size = new Size(560, 23);
+      progressBar.TabIndex = 16;
       // 
       // lblProgress
       // 
@@ -254,7 +254,7 @@
       Controls.Add(txtResult);
       Controls.Add(lblTimeTook);
       Controls.Add(lblProgress);
-      Controls.Add(progressBar1);
+      Controls.Add(progressBar);
       Controls.Add(btnBrowse);
       Controls.Add(btnGenerateKey);
       Controls.Add(btnImportKey);
@@ -280,7 +280,7 @@
     private Button btnImportKey;
     private Button btnGenerateKey;
     private Button btnBrowse;
-    private ProgressBar progressBar1;
+    private ProgressBar progressBar;
     private Label lblProgress;
     private Label lblTimeTook;
     private TextBox txtResult;
