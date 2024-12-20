@@ -53,6 +53,7 @@ public partial class RSAForm : Form
     _btnGenerateKey.Click += (s, e) => OnGenerateKeyClicked();
     _btnImportKey.Click += (s, e) => OnImportKeyClicked();
     _btnEncrypt.Click += (s, e) => OnEncryptClicked();
+    _btnBrowse.Click += (s, e) => OnBrowseClicked();
   }
 
   private void OnSelectedDataFormatChanged()
@@ -62,6 +63,19 @@ public partial class RSAForm : Form
 
   private void OnSelectedKeySizeChanged()
     => _selectedKeySize = (int)_cbKeySize.SelectedItem!;
+
+  private void OnBrowseClicked()
+  {
+    var openFileDialog = new OpenFileDialog
+    {
+      Filter = "All files (*.*)|*.*",
+    };
+
+    if (openFileDialog.ShowDialog() == DialogResult.OK)
+    {
+      _txtDataOrFilePath.Text = openFileDialog.FileName;
+    }
+  }
 
   private void OnGenerateKeyClicked()
   {
@@ -111,17 +125,30 @@ public partial class RSAForm : Form
     try
     {
       stopWatch.Start();
-      if (_selectedDataFormat == DataFormat.File)
+      if (_selectedDataFormat != DataFormat.File)
       {
-        HandleFileEncryption(rsaEncryption, publicKeyPem, _txtDataOrFilePath.Text);
+        HandleStringEncryption(rsaEncryption, publicKeyPem, _txtDataOrFilePath.Text);
         return;
       }
 
-      HandleStringEncryption(rsaEncryption, publicKeyPem, _txtDataOrFilePath.Text);
+      if (!File.Exists(_txtDataOrFilePath.Text))
+      {
+        ShowErrorMessage("The file does not exist");
+        return;
+      }
+      HandleFileEncryption(rsaEncryption, publicKeyPem, _txtDataOrFilePath.Text);
+    }
+    catch (CryptographicException ex) when (ex.HResult == unchecked((int)0x8009000D))
+    {
+      ShowErrorMessage("Invalid key format or corrupted key file");
+    }
+    catch (CryptographicException ex) when (ex.HResult == unchecked((int)0x80090005))
+    {
+      ShowErrorMessage("Key size mismatch or invalid padding");
     }
     catch (CryptographicException ex)
     {
-      ShowErrorMessage(ex.Message);
+      ShowErrorMessage($"Encryption error: {ex.Message}\nError code: 0x{ex.HResult:X8}");
     }
     finally
     {
@@ -154,11 +181,14 @@ public partial class RSAForm : Form
   private void HandleHexEncryption(RSAEncryption rsa, string publicKeyPem, string hex)
     => _txtResult.Text = rsa.Encrypt(hex, publicKeyPem, _selectedDataFormat);
 
-  private void HandleFileEncryption(RSAEncryption rsa, string publicKeyPem, string text)
+  private static void HandleFileEncryption(RSAEncryption rsa, string publicKeyPem, string filePath)
   {
-    throw new NotImplementedException();
+    var encryptedBytes = rsa.EncryptFromFile(filePath, publicKeyPem);
+    var encryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
+    Directory.CreateDirectory(encryptedDirectory);
+    var encryptedFilePath = Path.Combine(encryptedDirectory, $"{Path.GetFileName(filePath)}-encrypted");
+    File.WriteAllBytes(encryptedFilePath, encryptedBytes);
   }
-
 
   [GeneratedRegex(@"public_key(\d+)\.pem")]
   private static partial Regex KeyNumberPattern();
