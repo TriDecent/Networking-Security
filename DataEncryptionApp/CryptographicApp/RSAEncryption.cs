@@ -1,6 +1,4 @@
-using System.Configuration;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace CryptographicApp;
@@ -16,6 +14,14 @@ public interface IRSAEncryption
 
 public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncryption
 {
+  private readonly Dictionary<RSAEncryptionPadding, int> _paddingOverhead = new()
+  {
+    [RSAEncryptionPadding.Pkcs1] = 11,
+    [RSAEncryptionPadding.OaepSHA1] = 42,
+    [RSAEncryptionPadding.OaepSHA256] = 66,
+    [RSAEncryptionPadding.OaepSHA384] = 98,
+    [RSAEncryptionPadding.OaepSHA512] = 130
+  };
   private readonly RSA _rsa = rsa;
   private readonly RSAEncryptionPadding _padding = padding;
 
@@ -73,7 +79,7 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
 
   private string DecryptFromHex(string encryptedHex, string privateKeyPem)
   {
-     _rsa.ImportFromPem(privateKeyPem);
+    _rsa.ImportFromPem(privateKeyPem);
     var bytes = Convert.FromHexString(encryptedHex);
     var decryptedBytes = _rsa.Decrypt(bytes, _padding);
     var hex = Convert.ToHexString(decryptedBytes);
@@ -81,13 +87,40 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
     return hex;
   }
 
-  public byte[] DecryptFromFile(string filePath, string privateKeyPem)
-  {
-    throw new NotImplementedException();
-  }
-
   public byte[] EncryptFromFile(string filePath, string publicKeyPem)
   {
-    throw new NotImplementedException();
+    _rsa.ImportFromPem(publicKeyPem);
+    var fileBytes = File.ReadAllBytes(filePath);
+
+    int overhead = _paddingOverhead[_padding];
+    int maxChunkSize = (_rsa.KeySize / 8) - overhead;
+    var encryptedChunks = new List<byte>();
+
+    for (int i = 0; i < fileBytes.Length; i += maxChunkSize)
+    {
+      var chunk = fileBytes.Skip(i).Take(maxChunkSize).ToArray();
+      var encryptedChunk = _rsa.Encrypt(chunk, _padding);
+      encryptedChunks.AddRange(encryptedChunk);
+    }
+
+    return [.. encryptedChunks];
+  }
+
+  public byte[] DecryptFromFile(string filePath, string privateKeyPem)
+  {
+    _rsa.ImportFromPem(privateKeyPem);
+    var encryptedBytes = File.ReadAllBytes(filePath);
+
+    int blockSize = _rsa.KeySize / 8;
+    var decryptedChunks = new List<byte>();
+
+    for (int i = 0; i < encryptedBytes.Length; i += blockSize)
+    {
+      var chunk = encryptedBytes.Skip(i).Take(blockSize).ToArray();
+      var decryptedChunk = _rsa.Decrypt(chunk, _padding);
+      decryptedChunks.AddRange(decryptedChunk);
+    }
+
+    return [.. decryptedChunks];
   }
 }
