@@ -50,6 +50,7 @@
       lblKeySize = new Label();
       cbKeySize = new ComboBox();
       timer = new System.Windows.Forms.Timer(components);
+      cbUseMultithreading = new CheckBox();
       SuspendLayout();
       // 
       // cbDataFormat
@@ -240,11 +241,23 @@
       cbKeySize.Size = new Size(96, 29);
       cbKeySize.TabIndex = 27;
       // 
+      // cbUseMultithreading
+      // 
+      cbUseMultithreading.AutoSize = true;
+      cbUseMultithreading.Font = new Font("Segoe UI", 12F);
+      cbUseMultithreading.Location = new Point(513, 142);
+      cbUseMultithreading.Name = "cbUseMultithreading";
+      cbUseMultithreading.Size = new Size(132, 25);
+      cbUseMultithreading.TabIndex = 28;
+      cbUseMultithreading.Text = "Multithreading";
+      cbUseMultithreading.UseVisualStyleBackColor = true;
+      // 
       // RSAForm
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       ClientSize = new Size(657, 351);
+      Controls.Add(cbUseMultithreading);
       Controls.Add(cbKeySize);
       Controls.Add(lblKeySize);
       Controls.Add(txtImportedKeyName);
@@ -295,5 +308,6 @@
     private Label lblKeySize;
     private ComboBox cbKeySize;
     private System.Windows.Forms.Timer timer;
+    private CheckBox cbUseMultithreading;
   }
 }
