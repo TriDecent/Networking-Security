@@ -51,12 +51,14 @@ public partial class RSAForm : Form
     _cbPadding.SelectedValueChanged += (s, e) => OnSelectedPaddingChanged();
     _cbKeySize.SelectedValueChanged += (s, e) => OnSelectedKeySizeChanged();
 
-    _btnGenerateKey.Click += (s, e) => OnProgressStart();
-    _btnEncrypt.Click += (s, e) => OnProgressStart();
+    _btnGenerateKey.Click += (s, e) => OnEncryptOrDecryptStart();
+    _btnDecrypt.Click += (s, e) => OnEncryptOrDecryptStart();
+    _btnEncrypt.Click += (s, e) => OnEncryptOrDecryptStart();
 
     _btnGenerateKey.Click += (s, e) => OnGenerateKeyClicked();
     _btnImportKey.Click += (s, e) => OnImportKeyClicked();
     _btnEncrypt.Click += (s, e) => OnEncryptClicked();
+    _btnDecrypt.Click += (s, e) => OnDecryptClicked();
     _btnBrowse.Click += (s, e) => OnBrowseClicked();
   }
 
@@ -81,12 +83,12 @@ public partial class RSAForm : Form
 
   private static void HandleFileEncryption(RSAEncryption rsa, string publicKeyPem, string filePath)
   {
-    var encryptedBytes = rsa.EncryptFromFile(filePath, publicKeyPem);
     var encryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
     Directory.CreateDirectory(encryptedDirectory);
     var encryptedFilePath = Path.Combine(encryptedDirectory,
       $"{Path.GetFileNameWithoutExtension(filePath)}-encrypted{Path.GetExtension(filePath)}");
-    File.WriteAllBytes(encryptedFilePath, encryptedBytes);
+
+    rsa.EncryptFile(filePath, encryptedFilePath, publicKeyPem);
   }
 
   private static void HandleCryptographicException(CryptographicException ex)
@@ -102,7 +104,17 @@ public partial class RSAForm : Form
   }
 
   private void OnSelectedDataFormatChanged()
-    => _selectedDataFormat = (DataFormat)_cbDataFormat.SelectedItem!;
+  {
+    var selectedFormat = (DataFormat)_cbDataFormat.SelectedItem!;
+
+    if (selectedFormat is DataFormat.File)
+    {
+      ShowWarningMessage("Ensure correct options for the keys used when working with files.");
+    }
+
+    _selectedDataFormat = selectedFormat;
+  }
+
 
   private void OnSelectedPaddingChanged()
     => _selectedPadding = (RSAEncryptionPadding)_cbPadding.SelectedItem!;
@@ -110,10 +122,12 @@ public partial class RSAForm : Form
   private void OnSelectedKeySizeChanged()
     => _selectedKeySize = (int)_cbKeySize.SelectedItem!;
 
-  private void OnProgressStart()
+  private void OnEncryptOrDecryptStart()
   {
     _stopWatch.Restart();
     _progressBar.Value = 0;
+
+    var rsa = new RSAEncryption(RSA.Create(), _selectedPadding);
   }
 
   private void OnBrowseClicked()
@@ -184,7 +198,13 @@ public partial class RSAForm : Form
     }
     catch (CryptographicException ex)
     {
+      FinalizeProcess(_btnEncrypt);
       HandleCryptographicException(ex);
+    }
+    catch (Exception ex)
+    {
+      FinalizeProcess(_btnEncrypt);
+      ShowErrorMessage(ex.Message);
     }
   }
 
@@ -211,6 +231,75 @@ public partial class RSAForm : Form
   private void HandleHexEncryption(RSAEncryption rsa, string publicKeyPem, string hex)
     => _txtResult.Text = rsa.Encrypt(hex, publicKeyPem, _selectedDataFormat);
 
+  private void OnDecryptClicked()
+  {
+    if (string.IsNullOrEmpty(_txtDataOrFilePath.Text) || string.IsNullOrEmpty(_txtImportedKeyName.Text))
+    {
+      ShowErrorMessage("Data or file path and imported key name cannot be empty.");
+      return;
+    }
+
+    var privateKeyPem = SecureKeyStorage.Read(_importedKeyFilePath);
+    var rsa = RSA.Create();
+    var rsaEncryption = new RSAEncryption(rsa, _selectedPadding);
+
+    ToggleButton(_btnDecrypt);
+    try
+    {
+      if (_selectedDataFormat != DataFormat.File)
+      {
+        HandleStringDecryption(rsaEncryption, privateKeyPem, _txtDataOrFilePath.Text);
+        FinalizeProcess(_btnDecrypt);
+        return;
+      }
+
+      HandleFileDecryption(rsaEncryption, privateKeyPem, _txtDataOrFilePath.Text);
+      FinalizeProcess(_btnDecrypt);
+      ShowSuccessMessage("Your decrypted file has been saved to DecryptedFiles folder");
+    }
+    catch (CryptographicException ex)
+    {
+      FinalizeProcess(_btnDecrypt);
+      HandleCryptographicException(ex);
+    }
+    catch (Exception ex)
+    {
+      FinalizeProcess(_btnDecrypt);
+      ShowErrorMessage(ex.Message);
+    }
+  }
+
+  private void HandleStringDecryption(RSAEncryption rsa, string privateKeyPem, string encryptedData)
+  {
+    if (_selectedDataFormat == DataFormat.Text)
+    {
+      HandleTextDecryption(rsa, privateKeyPem, encryptedData);
+      return;
+    }
+
+    if (!encryptedData.IsHexString())
+    {
+      ShowErrorMessage("The provided data is not a valid hexadecimal string.");
+      return;
+    }
+
+    HandleHexDecryption(rsa, privateKeyPem, encryptedData);
+  }
+
+  private void HandleTextDecryption(RSAEncryption rsa, string privateKeyPem, string encryptedText)
+    => _txtResult.Text = rsa.Decrypt(encryptedText, privateKeyPem, _selectedDataFormat);
+
+  private void HandleHexDecryption(RSAEncryption rsa, string privateKeyPem, string encryptedHex)
+    => _txtResult.Text = rsa.Decrypt(encryptedHex, privateKeyPem, _selectedDataFormat);
+
+  private static void HandleFileDecryption(RSAEncryption rsa, string privateKeyPem, string filePath)
+  {
+    var decryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "DecryptedFiles");
+    Directory.CreateDirectory(decryptedDirectory);
+    var decryptedFilePath = Path.Combine(decryptedDirectory,
+      $"{Path.GetFileNameWithoutExtension(filePath)}-decrypted{Path.GetExtension(filePath)}");
+    rsa.DecryptFile(filePath, decryptedFilePath, privateKeyPem);
+  }
 
   private void FinalizeProcess(Button? button)
   {
@@ -222,6 +311,12 @@ public partial class RSAForm : Form
 
   private void DisplayTimeTook(long elapsedMilliseconds)
     => _lblTimeTook.Text = $"Time took: {elapsedMilliseconds} ms";
+
+  private static void ShowWarningMessage(string message) => MessageBox.Show(
+    message,
+    "Warning",
+    MessageBoxButtons.OK,
+    MessageBoxIcon.Warning);
 
   private static void ShowSuccessMessage(string message) => MessageBox.Show(
     message,
