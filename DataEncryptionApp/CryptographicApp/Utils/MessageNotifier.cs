@@ -1,4 +1,4 @@
-namespace CryptographicApp;
+namespace CryptographicApp.Utils;
 
 public static class MessageNotifier
 {

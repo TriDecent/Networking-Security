@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace CryptographicApp;
+namespace CryptographicApp.CryptographicCores.KeysRepository;
 
 public partial class SecureKeyStorage
 {

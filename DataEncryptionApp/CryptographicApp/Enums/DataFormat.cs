@@ -1,4 +1,4 @@
-namespace CryptographicApp;
+namespace CryptographicApp.Enums;
 
 public enum DataFormat
 {

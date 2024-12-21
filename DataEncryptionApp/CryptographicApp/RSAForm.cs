@@ -1,6 +1,9 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
+using CryptographicApp.CryptographicCores;
+using CryptographicApp.CryptographicCores.KeysRepository;
+using CryptographicApp.Enums;
+using CryptographicApp.Utils;
 
 namespace CryptographicApp;
 
@@ -72,7 +75,8 @@ public partial class RSAForm : Form
 
     if (selectedFormat is DataFormat.File)
     {
-      MessageNotifier.ShowWarning("Ensure correct options for the keys used when working with files.");
+      MessageNotifier.ShowWarning(
+        "Ensure correct options for the keys used when working with files.");
     }
 
     _selectedDataFormat = selectedFormat;
@@ -118,7 +122,8 @@ public partial class RSAForm : Form
     }
 
     ToggleProgress(false);
-    MessageNotifier.ShowSuccess("Keys have been successfully generated and saved in the KeyPairs folder.");
+    MessageNotifier.ShowSuccess(
+      "Keys have been successfully generated and saved in the KeyPairs folder.");
 
     void GenerateAndSaveKeys()
     {
@@ -145,7 +150,8 @@ public partial class RSAForm : Form
   {
     if (!AreInputsValid())
     {
-      MessageNotifier.ShowError("Data or file path and imported key name cannot be empty.");
+      MessageNotifier.ShowError(
+        "Data or file path and imported key name cannot be empty.");
       return;
     }
 
@@ -158,7 +164,8 @@ public partial class RSAForm : Form
   {
     if (!AreInputsValid())
     {
-      MessageNotifier.ShowError("Data or file path and imported key name cannot be empty.");
+      MessageNotifier.ShowError(
+        "Data or file path and imported key name cannot be empty.");
       return;
     }
 
@@ -177,11 +184,13 @@ public partial class RSAForm : Form
       ToggleProgress(false);
       if (runCryptographicOperation.Method.Name == nameof(PerformEncryptionAsync))
       {
-        MessageNotifier.ShowSuccess("Your encrypted files has been saved to EncryptedFiles folder");
+        MessageNotifier.ShowSuccess(
+          "Your encrypted files has been saved to EncryptedFiles folder");
         return;
       }
 
-      MessageNotifier.ShowSuccess("Your decrypted files has been saved to DecryptedFiles folder");
+      MessageNotifier.ShowSuccess(
+        "Your decrypted files has been saved to DecryptedFiles folder");
     }
     catch (CryptographicException ex)
     {
@@ -259,7 +268,8 @@ public partial class RSAForm : Form
 
   private static string GetEncryptedFilePath(string inputPath)
   {
-    var encryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
+    var encryptedDirectory = Path.Combine(
+      Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
     Directory.CreateDirectory(encryptedDirectory);
     return Path.Combine(encryptedDirectory,
       $"{Path.GetFileNameWithoutExtension(inputPath)}-encrypted{Path.GetExtension(inputPath)}");
@@ -267,14 +277,16 @@ public partial class RSAForm : Form
 
   private static string GetDecryptedFilePath(string inputPath)
   {
-    var decryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "DecryptedFiles");
+    var decryptedDirectory = Path.Combine(
+      Path.GetDirectoryName(Application.ExecutablePath)!, "DecryptedFiles");
     Directory.CreateDirectory(decryptedDirectory);
     return Path.Combine(decryptedDirectory,
       $"{Path.GetFileNameWithoutExtension(inputPath)}-decrypted{Path.GetExtension(inputPath)}");
   }
 
   private bool AreInputsValid()
-    => !string.IsNullOrEmpty(_txtDataOrFilePath.Text) && !string.IsNullOrEmpty(_txtImportedKeyName.Text);
+    => !string.IsNullOrEmpty(_txtDataOrFilePath.Text) &&
+    !string.IsNullOrEmpty(_txtImportedKeyName.Text);
 
   private void ToggleProgress(bool isProcessing)
   {
