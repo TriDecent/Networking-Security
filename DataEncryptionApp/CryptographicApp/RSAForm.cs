@@ -12,6 +12,7 @@ public partial class RSAForm : Form
   private readonly TextBox _txtDataOrFilePath, _txtResult, _txtImportedKeyName;
   private readonly Label _lblTimeTook;
   private readonly ProgressBar _progressBar;
+  private readonly Stopwatch _stopWatch = new();
 
   private string _importedKeyFilePath = "";
 
@@ -50,19 +51,70 @@ public partial class RSAForm : Form
     _cbPadding.SelectedValueChanged += (s, e) => OnSelectedPaddingChanged();
     _cbKeySize.SelectedValueChanged += (s, e) => OnSelectedKeySizeChanged();
 
+    _btnGenerateKey.Click += (s, e) => OnProgressStart();
+    _btnEncrypt.Click += (s, e) => OnProgressStart();
+
     _btnGenerateKey.Click += (s, e) => OnGenerateKeyClicked();
     _btnImportKey.Click += (s, e) => OnImportKeyClicked();
     _btnEncrypt.Click += (s, e) => OnEncryptClicked();
     _btnBrowse.Click += (s, e) => OnBrowseClicked();
   }
 
+  [GeneratedRegex(@"public_key(\d+)\.pem")]
+  private static partial Regex KeyNumberPattern();
+
+  private static void SaveKeyPairs(string publicKey, string privateKey)
+  {
+    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "KeyPairs");
+    Directory.CreateDirectory(directory);
+
+    var newNumber = Directory.GetFiles(directory, "public_key*.pem")
+      .Select(file => KeyNumberPattern().Match(file))
+      .Where(match => match.Success && int.TryParse(match.Groups[1].Value, out _))
+      .Select(match => int.Parse(match.Groups[1].Value))
+      .DefaultIfEmpty(0)
+      .Max() + 1;
+
+    File.WriteAllText(Path.Combine(directory, $"public_key{newNumber}.pem"), publicKey);
+    File.WriteAllText(Path.Combine(directory, $"private_key{newNumber}.pem"), privateKey);
+  }
+
+  private static void HandleFileEncryption(RSAEncryption rsa, string publicKeyPem, string filePath)
+  {
+    var encryptedBytes = rsa.EncryptFromFile(filePath, publicKeyPem);
+    var encryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
+    Directory.CreateDirectory(encryptedDirectory);
+    var encryptedFilePath = Path.Combine(encryptedDirectory,
+      $"{Path.GetFileNameWithoutExtension(filePath)}-encrypted{Path.GetExtension(filePath)}");
+    File.WriteAllBytes(encryptedFilePath, encryptedBytes);
+  }
+
+  private static void HandleCryptographicException(CryptographicException ex)
+  {
+    var errorMessage = ex.HResult switch
+    {
+      unchecked((int)0x8009000D) => "Invalid key format or corrupted key file",
+      unchecked((int)0x80090005) => "Key size mismatch or invalid padding",
+      _ => $"Encryption error: {ex.Message}\nError code: 0x{ex.HResult:X8}"
+    };
+
+    ShowErrorMessage(errorMessage);
+  }
+
   private void OnSelectedDataFormatChanged()
-  => _selectedDataFormat = (DataFormat)_cbDataFormat.SelectedItem!;
+    => _selectedDataFormat = (DataFormat)_cbDataFormat.SelectedItem!;
+
   private void OnSelectedPaddingChanged()
     => _selectedPadding = (RSAEncryptionPadding)_cbPadding.SelectedItem!;
 
   private void OnSelectedKeySizeChanged()
     => _selectedKeySize = (int)_cbKeySize.SelectedItem!;
+
+  private void OnProgressStart()
+  {
+    _stopWatch.Restart();
+    _progressBar.Value = 0;
+  }
 
   private void OnBrowseClicked()
   {
@@ -79,16 +131,13 @@ public partial class RSAForm : Form
 
   private void OnGenerateKeyClicked()
   {
-    var stopWatch = Stopwatch.StartNew();
-
     var rsa = RSA.Create(_selectedKeySize);
     var rsaEncryption = new RSAEncryption(rsa, _selectedPadding);
     var (publicKey, privateKey) = rsaEncryption.GenerateKey();
 
     SaveKeyPairs(publicKey, privateKey);
 
-    stopWatch.Stop();
-    DisplayTimeTook(stopWatch.ElapsedMilliseconds);
+    FinalizeProcess(null);
 
     ShowSuccessMessage("Keys have been successfully generated and saved in the KeyPairs folder.");
   }
@@ -117,44 +166,25 @@ public partial class RSAForm : Form
 
     var publicKeyPem = File.ReadAllText(_importedKeyFilePath);
     var rsa = RSA.Create();
-
     var rsaEncryption = new RSAEncryption(rsa, _selectedPadding);
 
-    var stopWatch = Stopwatch.StartNew();
     ToggleButton(_btnEncrypt);
     try
     {
-      stopWatch.Start();
       if (_selectedDataFormat != DataFormat.File)
       {
         HandleStringEncryption(rsaEncryption, publicKeyPem, _txtDataOrFilePath.Text);
+        FinalizeProcess(_btnEncrypt);
         return;
       }
 
-      if (!File.Exists(_txtDataOrFilePath.Text))
-      {
-        ShowErrorMessage("The file does not exist");
-        return;
-      }
       HandleFileEncryption(rsaEncryption, publicKeyPem, _txtDataOrFilePath.Text);
-    }
-    catch (CryptographicException ex) when (ex.HResult == unchecked((int)0x8009000D))
-    {
-      ShowErrorMessage("Invalid key format or corrupted key file");
-    }
-    catch (CryptographicException ex) when (ex.HResult == unchecked((int)0x80090005))
-    {
-      ShowErrorMessage("Key size mismatch or invalid padding");
+      FinalizeProcess(_btnEncrypt);
+      ShowSuccessMessage("Your encrypted file has been saved to EncryptedFiles folder");
     }
     catch (CryptographicException ex)
     {
-      ShowErrorMessage($"Encryption error: {ex.Message}\nError code: 0x{ex.HResult:X8}");
-    }
-    finally
-    {
-      stopWatch.Stop();
-      DisplayTimeTook(stopWatch.ElapsedMilliseconds);
-      ToggleButton(_btnEncrypt);
+      HandleCryptographicException(ex);
     }
   }
 
@@ -181,32 +211,13 @@ public partial class RSAForm : Form
   private void HandleHexEncryption(RSAEncryption rsa, string publicKeyPem, string hex)
     => _txtResult.Text = rsa.Encrypt(hex, publicKeyPem, _selectedDataFormat);
 
-  private static void HandleFileEncryption(RSAEncryption rsa, string publicKeyPem, string filePath)
+
+  private void FinalizeProcess(Button? button)
   {
-    var encryptedBytes = rsa.EncryptFromFile(filePath, publicKeyPem);
-    var encryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
-    Directory.CreateDirectory(encryptedDirectory);
-    var encryptedFilePath = Path.Combine(encryptedDirectory, $"{Path.GetFileName(filePath)}-encrypted");
-    File.WriteAllBytes(encryptedFilePath, encryptedBytes);
-  }
-
-  [GeneratedRegex(@"public_key(\d+)\.pem")]
-  private static partial Regex KeyNumberPattern();
-
-  private static void SaveKeyPairs(string publicKey, string privateKey)
-  {
-    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "KeyPairs");
-    Directory.CreateDirectory(directory);
-
-    var newNumber = Directory.GetFiles(directory, "public_key*.pem")
-      .Select(file => KeyNumberPattern().Match(file))
-      .Where(match => match.Success && int.TryParse(match.Groups[1].Value, out _))
-      .Select(match => int.Parse(match.Groups[1].Value))
-      .DefaultIfEmpty(0)
-      .Max() + 1;
-
-    File.WriteAllText(Path.Combine(directory, $"public_key{newNumber}.pem"), publicKey);
-    File.WriteAllText(Path.Combine(directory, $"private_key{newNumber}.pem"), privateKey);
+    _stopWatch.Stop();
+    _progressBar.Value = 100;
+    DisplayTimeTook(_stopWatch.ElapsedMilliseconds);
+    if (button is not null) ToggleButton(button);
   }
 
   private void DisplayTimeTook(long elapsedMilliseconds)

@@ -28,6 +28,7 @@
     /// </summary>
     private void InitializeComponent()
     {
+      components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RSAForm));
       cbDataFormat = new ComboBox();
       txtDataOrFilePath = new TextBox();
@@ -48,6 +49,7 @@
       txtImportedKeyName = new TextBox();
       lblKeySize = new Label();
       cbKeySize = new ComboBox();
+      timer = new System.Windows.Forms.Timer(components);
       SuspendLayout();
       // 
       // cbDataFormat
@@ -292,5 +294,6 @@
     private TextBox txtImportedKeyName;
     private Label lblKeySize;
     private ComboBox cbKeySize;
+    private System.Windows.Forms.Timer timer;
   }
 }
