@@ -75,8 +75,8 @@ public partial class RSAForm : Form
       .DefaultIfEmpty(0)
       .Max() + 1;
 
-    File.WriteAllText(Path.Combine(directory, $"public_key{newNumber}.pem"), publicKey);
-    File.WriteAllText(Path.Combine(directory, $"private_key{newNumber}.pem"), privateKey);
+    SecureKeyStorage.Write(Path.Combine(directory, $"public_key{newNumber}.pem"), publicKey);
+    SecureKeyStorage.Write(Path.Combine(directory, $"private_key{newNumber}.pem"), privateKey);
   }
 
   private static void HandleFileEncryption(RSAEncryption rsa, string publicKeyPem, string filePath)
@@ -164,7 +164,7 @@ public partial class RSAForm : Form
       return;
     }
 
-    var publicKeyPem = File.ReadAllText(_importedKeyFilePath);
+    var publicKeyPem = SecureKeyStorage.Read(_importedKeyFilePath);
     var rsa = RSA.Create();
     var rsaEncryption = new RSAEncryption(rsa, _selectedPadding);
 
