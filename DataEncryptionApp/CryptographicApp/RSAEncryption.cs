@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -8,8 +9,8 @@ public interface IRSAEncryption
   (string PublicKey, string PrivateKey) GenerateKey();
   string Encrypt(string data, string publicKeyPem, DataFormat dataFormat);
   string Decrypt(string encryptedData, string privateKeyPem, DataFormat dataFormat);
-  byte[] EncryptFromFile(string filePath, string publicKeyPem);
-  byte[] DecryptFromFile(string filePath, string privateKeyPem);
+  void EncryptFile(string inputFile, string outputFile, string publicKeyPem);
+  void DecryptFile(string inputFile, string outputFile, string privateKeyPem);
 }
 
 public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncryption
@@ -67,7 +68,7 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
       _ => throw new ArgumentException("Unsupported data format", nameof(dataFormat)),
     };
 
-  public string DecryptFromText(string encryptedText, string privateKeyPem)
+  private string DecryptFromText(string encryptedText, string privateKeyPem)
   {
     _rsa.ImportFromPem(privateKeyPem);
     var bytes = Convert.FromBase64String(encryptedText);
@@ -87,40 +88,45 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
     return hex;
   }
 
-  public byte[] EncryptFromFile(string filePath, string publicKeyPem)
+  public void EncryptFile(string inputFile, string outputFile, string publicKeyPem)
   {
     _rsa.ImportFromPem(publicKeyPem);
-    var fileBytes = File.ReadAllBytes(filePath);
+    int maxChunkSize = (_rsa.KeySize / 8) - _paddingOverhead[_padding];
 
-    int overhead = _paddingOverhead[_padding];
-    int maxChunkSize = (_rsa.KeySize / 8) - overhead;
-    var encryptedChunks = new List<byte>();
+    using var inputStream = File.OpenRead(inputFile);
+    using var outputStream = File.Create(outputFile);
 
-    for (int i = 0; i < fileBytes.Length; i += maxChunkSize)
+    var buffer = new byte[maxChunkSize];
+    int bytesRead;
+
+    while ((bytesRead = inputStream.Read(buffer, 0, maxChunkSize)) > 0)
     {
-      var chunk = fileBytes.Skip(i).Take(maxChunkSize).ToArray();
+      var chunk = buffer[..bytesRead];
       var encryptedChunk = _rsa.Encrypt(chunk, _padding);
-      encryptedChunks.AddRange(encryptedChunk);
-    }
 
-    return [.. encryptedChunks];
+      outputStream.Write(BitConverter.GetBytes(encryptedChunk.Length));
+      outputStream.Write(encryptedChunk);
+    }
   }
 
-  public byte[] DecryptFromFile(string filePath, string privateKeyPem)
+  public void DecryptFile(string inputFile, string outputFile, string privateKeyPem)
   {
     _rsa.ImportFromPem(privateKeyPem);
-    var encryptedBytes = File.ReadAllBytes(filePath);
+    using var inputStream = new BufferedStream(File.OpenRead(inputFile));
+    using var outputStream = new BufferedStream(File.Create(outputFile));
 
-    int blockSize = _rsa.KeySize / 8;
-    var decryptedChunks = new List<byte>();
+    var buffer = new byte[sizeof(int)];
 
-    for (int i = 0; i < encryptedBytes.Length; i += blockSize)
+    while (inputStream.Read(buffer, 0, sizeof(int)) == sizeof(int))
     {
-      var chunk = encryptedBytes.Skip(i).Take(blockSize).ToArray();
-      var decryptedChunk = _rsa.Decrypt(chunk, _padding);
-      decryptedChunks.AddRange(decryptedChunk);
-    }
+      int chunkSize = BitConverter.ToInt32(buffer);
+      var encryptedChunk = new byte[chunkSize];
 
-    return [.. decryptedChunks];
+      if (inputStream.Read(encryptedChunk, 0, chunkSize) == chunkSize)
+      {
+        var decryptedChunk = _rsa.Decrypt(encryptedChunk, _padding);
+        outputStream.Write(decryptedChunk);
+      }
+    }
   }
 }
