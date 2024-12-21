@@ -10,9 +10,12 @@ public partial class RSAForm : Form
   private readonly Button _btnEncrypt, _btnDecrypt;
   private readonly ComboBox _cbDataFormat, _cbPadding, _cbKeySize;
   private readonly TextBox _txtDataOrFilePath, _txtResult, _txtImportedKeyName;
+  private readonly CheckBox _cbUseMultithreading;
   private readonly Label _lblTimeTook;
   private readonly ProgressBar _progressBar;
   private readonly Stopwatch _stopWatch = new();
+
+  private readonly SecureKeyStorage _keyStorage = new();
 
   private string _importedKeyFilePath = "";
 
@@ -35,6 +38,7 @@ public partial class RSAForm : Form
     _txtDataOrFilePath = txtDataOrFilePath;
     _txtResult = txtResult;
     _txtImportedKeyName = txtImportedKeyName;
+    _cbUseMultithreading = cbUseMultithreading;
     _lblTimeTook = lblTimeTook;
     _progressBar = progressBar;
 
@@ -55,52 +59,11 @@ public partial class RSAForm : Form
     _btnDecrypt.Click += (s, e) => OnEncryptOrDecryptStart();
     _btnEncrypt.Click += (s, e) => OnEncryptOrDecryptStart();
 
-    _btnGenerateKey.Click += (s, e) => OnGenerateKeyClicked();
+    _btnGenerateKey.Click += async (s, e) => await OnGenerateKeyClickedAsync();
     _btnImportKey.Click += (s, e) => OnImportKeyClicked();
-    _btnEncrypt.Click += (s, e) => OnEncryptClicked();
-    _btnDecrypt.Click += (s, e) => OnDecryptClicked();
+    _btnEncrypt.Click += async (s, e) => await OnEncryptClickedAsync();
+    _btnDecrypt.Click += async (s, e) => await OnDecryptClickedAsync();
     _btnBrowse.Click += (s, e) => OnBrowseClicked();
-  }
-
-  [GeneratedRegex(@"public_key(\d+)\.pem")]
-  private static partial Regex KeyNumberPattern();
-
-  private static void SaveKeyPairs(string publicKey, string privateKey)
-  {
-    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "KeyPairs");
-    Directory.CreateDirectory(directory);
-
-    var newNumber = Directory.GetFiles(directory, "public_key*.pem")
-      .Select(file => KeyNumberPattern().Match(file))
-      .Where(match => match.Success && int.TryParse(match.Groups[1].Value, out _))
-      .Select(match => int.Parse(match.Groups[1].Value))
-      .DefaultIfEmpty(0)
-      .Max() + 1;
-
-    SecureKeyStorage.Write(Path.Combine(directory, $"public_key{newNumber}.pem"), publicKey);
-    SecureKeyStorage.Write(Path.Combine(directory, $"private_key{newNumber}.pem"), privateKey);
-  }
-
-  private static void HandleFileEncryption(RSAEncryption rsa, string publicKeyPem, string filePath)
-  {
-    var encryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
-    Directory.CreateDirectory(encryptedDirectory);
-    var encryptedFilePath = Path.Combine(encryptedDirectory,
-      $"{Path.GetFileNameWithoutExtension(filePath)}-encrypted{Path.GetExtension(filePath)}");
-
-    rsa.EncryptFile(filePath, encryptedFilePath, publicKeyPem);
-  }
-
-  private static void HandleCryptographicException(CryptographicException ex)
-  {
-    var errorMessage = ex.HResult switch
-    {
-      unchecked((int)0x8009000D) => "Invalid key format or corrupted key file",
-      unchecked((int)0x80090005) => "Key size mismatch or invalid padding",
-      _ => $"Encryption error: {ex.Message}\nError code: 0x{ex.HResult:X8}"
-    };
-
-    ShowErrorMessage(errorMessage);
   }
 
   private void OnSelectedDataFormatChanged()
@@ -109,12 +72,11 @@ public partial class RSAForm : Form
 
     if (selectedFormat is DataFormat.File)
     {
-      ShowWarningMessage("Ensure correct options for the keys used when working with files.");
+      MessageNotifier.ShowWarning("Ensure correct options for the keys used when working with files.");
     }
 
     _selectedDataFormat = selectedFormat;
   }
-
 
   private void OnSelectedPaddingChanged()
     => _selectedPadding = (RSAEncryptionPadding)_cbPadding.SelectedItem!;
@@ -126,8 +88,6 @@ public partial class RSAForm : Form
   {
     _stopWatch.Restart();
     _progressBar.Value = 0;
-
-    var rsa = new RSAEncryption(RSA.Create(), _selectedPadding);
   }
 
   private void OnBrowseClicked()
@@ -143,17 +103,28 @@ public partial class RSAForm : Form
     }
   }
 
-  private void OnGenerateKeyClicked()
+  private async Task OnGenerateKeyClickedAsync()
   {
     var rsa = RSA.Create(_selectedKeySize);
     var rsaEncryption = new RSAEncryption(rsa, _selectedPadding);
-    var (publicKey, privateKey) = rsaEncryption.GenerateKey();
 
-    SaveKeyPairs(publicKey, privateKey);
+    if (_cbUseMultithreading.Checked)
+    {
+      await Task.Run(GenerateAndSaveKeys);
+    }
+    else
+    {
+      GenerateAndSaveKeys();
+    }
 
-    FinalizeProcess(null);
+    ToggleProgress(false);
+    MessageNotifier.ShowSuccess("Keys have been successfully generated and saved in the KeyPairs folder.");
 
-    ShowSuccessMessage("Keys have been successfully generated and saved in the KeyPairs folder.");
+    void GenerateAndSaveKeys()
+    {
+      var (publicKey, privateKey) = rsaEncryption.GenerateKey();
+      _keyStorage.SaveKeyPair(new KeyPair(publicKey, privateKey));
+    }
   }
 
   private void OnImportKeyClicked()
@@ -170,166 +141,166 @@ public partial class RSAForm : Form
     }
   }
 
-  private void OnEncryptClicked()
+  private async Task OnEncryptClickedAsync()
   {
-    if (string.IsNullOrEmpty(_txtDataOrFilePath.Text) || string.IsNullOrEmpty(_txtImportedKeyName.Text))
+    if (!AreInputsValid())
     {
-      ShowErrorMessage("Data or file path and imported key name cannot be empty.");
+      MessageNotifier.ShowError("Data or file path and imported key name cannot be empty.");
       return;
     }
-
-    var publicKeyPem = SecureKeyStorage.Read(_importedKeyFilePath);
-    var rsa = RSA.Create();
-    var rsaEncryption = new RSAEncryption(rsa, _selectedPadding);
 
     ToggleButton(_btnEncrypt);
-    try
-    {
-      if (_selectedDataFormat != DataFormat.File)
-      {
-        HandleStringEncryption(rsaEncryption, publicKeyPem, _txtDataOrFilePath.Text);
-        FinalizeProcess(_btnEncrypt);
-        return;
-      }
-
-      HandleFileEncryption(rsaEncryption, publicKeyPem, _txtDataOrFilePath.Text);
-      FinalizeProcess(_btnEncrypt);
-      ShowSuccessMessage("Your encrypted file has been saved to EncryptedFiles folder");
-    }
-    catch (CryptographicException ex)
-    {
-      FinalizeProcess(_btnEncrypt);
-      HandleCryptographicException(ex);
-    }
-    catch (Exception ex)
-    {
-      FinalizeProcess(_btnEncrypt);
-      ShowErrorMessage(ex.Message);
-    }
+    await PerformWithProgress(PerformEncryptionAsync);
+    ToggleButton(_btnEncrypt);
   }
 
-  private void HandleStringEncryption(RSAEncryption rsa, string publicKeyPem, string dataString)
+  private async Task OnDecryptClickedAsync()
   {
-    if (_selectedDataFormat == DataFormat.Text)
+    if (!AreInputsValid())
     {
-      HandleTextEncryption(rsa, publicKeyPem, dataString);
+      MessageNotifier.ShowError("Data or file path and imported key name cannot be empty.");
       return;
     }
-
-    if (!dataString.IsHexString())
-    {
-      ShowErrorMessage("The provided data is not a valid hexadecimal string.");
-      return;
-    }
-
-    HandleHexEncryption(rsa, publicKeyPem, dataString);
-  }
-
-  private void HandleTextEncryption(RSAEncryption rsa, string publicKeyPem, string text)
-    => _txtResult.Text = rsa.Encrypt(text, publicKeyPem, _selectedDataFormat);
-
-  private void HandleHexEncryption(RSAEncryption rsa, string publicKeyPem, string hex)
-    => _txtResult.Text = rsa.Encrypt(hex, publicKeyPem, _selectedDataFormat);
-
-  private void OnDecryptClicked()
-  {
-    if (string.IsNullOrEmpty(_txtDataOrFilePath.Text) || string.IsNullOrEmpty(_txtImportedKeyName.Text))
-    {
-      ShowErrorMessage("Data or file path and imported key name cannot be empty.");
-      return;
-    }
-
-    var privateKeyPem = SecureKeyStorage.Read(_importedKeyFilePath);
-    var rsa = RSA.Create();
-    var rsaEncryption = new RSAEncryption(rsa, _selectedPadding);
 
     ToggleButton(_btnDecrypt);
+    await PerformWithProgress(PerformDecryptionAsync);
+    ToggleButton(_btnDecrypt);
+  }
+
+  private async Task PerformWithProgress(Func<Task> runCryptographicOperation)
+  {
+    ToggleProgress(true);
+
     try
     {
-      if (_selectedDataFormat != DataFormat.File)
+      await runCryptographicOperation();
+      ToggleProgress(false);
+      if (runCryptographicOperation.Method.Name == nameof(PerformEncryptionAsync))
       {
-        HandleStringDecryption(rsaEncryption, privateKeyPem, _txtDataOrFilePath.Text);
-        FinalizeProcess(_btnDecrypt);
+        MessageNotifier.ShowSuccess("Your encrypted files has been saved to EncryptedFiles folder");
         return;
       }
 
-      HandleFileDecryption(rsaEncryption, privateKeyPem, _txtDataOrFilePath.Text);
-      FinalizeProcess(_btnDecrypt);
-      ShowSuccessMessage("Your decrypted file has been saved to DecryptedFiles folder");
+      MessageNotifier.ShowSuccess("Your decrypted files has been saved to DecryptedFiles folder");
     }
     catch (CryptographicException ex)
     {
-      FinalizeProcess(_btnDecrypt);
+      ToggleProgress(false);
       HandleCryptographicException(ex);
     }
     catch (Exception ex)
     {
-      FinalizeProcess(_btnDecrypt);
-      ShowErrorMessage(ex.Message);
+      ToggleProgress(false);
+      MessageNotifier.ShowError($"An error occurred: {ex.Message}");
+    }
+    finally
+    {
+      ToggleProgress(false);
     }
   }
 
-  private void HandleStringDecryption(RSAEncryption rsa, string privateKeyPem, string encryptedData)
+  private Task PerformEncryptionAsync()
   {
-    if (_selectedDataFormat == DataFormat.Text)
-    {
-      HandleTextDecryption(rsa, privateKeyPem, encryptedData);
-      return;
-    }
+    var publicKeyPem = _keyStorage.Read(_importedKeyFilePath);
+    var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedPadding);
 
-    if (!encryptedData.IsHexString())
-    {
-      ShowErrorMessage("The provided data is not a valid hexadecimal string.");
-      return;
-    }
-
-    HandleHexDecryption(rsa, privateKeyPem, encryptedData);
+    return _cbUseMultithreading.Checked
+      ? Task.Run(() => EncryptData(rsaEncryption, publicKeyPem))
+      : Task.CompletedTask.ContinueWith(_ => EncryptData(rsaEncryption, publicKeyPem));
   }
 
-  private void HandleTextDecryption(RSAEncryption rsa, string privateKeyPem, string encryptedText)
-    => _txtResult.Text = rsa.Decrypt(encryptedText, privateKeyPem, _selectedDataFormat);
+  private Task PerformDecryptionAsync()
+  {
+    var privateKeyPem = _keyStorage.Read(_importedKeyFilePath);
+    var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedPadding);
 
-  private void HandleHexDecryption(RSAEncryption rsa, string privateKeyPem, string encryptedHex)
-    => _txtResult.Text = rsa.Decrypt(encryptedHex, privateKeyPem, _selectedDataFormat);
+    return _cbUseMultithreading.Checked
+      ? Task.Run(() => DecryptData(rsaEncryption, privateKeyPem))
+      : Task.CompletedTask.ContinueWith(_ => DecryptData(rsaEncryption, privateKeyPem));
+  }
 
-  private static void HandleFileDecryption(RSAEncryption rsa, string privateKeyPem, string filePath)
+  private void EncryptData(RSAEncryption rsaEncryption, string publicKeyPem)
+  {
+    if (_selectedDataFormat == DataFormat.File)
+    {
+      rsaEncryption.EncryptFile(
+        _txtDataOrFilePath.Text,
+        GetEncryptedFilePath(_txtDataOrFilePath.Text),
+        publicKeyPem);
+    }
+    else
+    {
+      _txtResult.Invoke(() =>
+        _txtResult.Text = rsaEncryption.Encrypt(
+          _txtDataOrFilePath.Text,
+          publicKeyPem,
+          _selectedDataFormat));
+    }
+  }
+
+  private void DecryptData(RSAEncryption rsaEncryption, string privateKeyPem)
+  {
+    if (_selectedDataFormat == DataFormat.File)
+    {
+      rsaEncryption.DecryptFile(
+        _txtDataOrFilePath.Text,
+        GetDecryptedFilePath(_txtDataOrFilePath.Text),
+        privateKeyPem);
+    }
+    else
+    {
+      _txtResult.Invoke(() =>
+        _txtResult.Text = rsaEncryption.Decrypt(
+          _txtDataOrFilePath.Text,
+          privateKeyPem,
+          _selectedDataFormat));
+    }
+  }
+
+  private static string GetEncryptedFilePath(string inputPath)
+  {
+    var encryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
+    Directory.CreateDirectory(encryptedDirectory);
+    return Path.Combine(encryptedDirectory,
+      $"{Path.GetFileNameWithoutExtension(inputPath)}-encrypted{Path.GetExtension(inputPath)}");
+  }
+
+  private static string GetDecryptedFilePath(string inputPath)
   {
     var decryptedDirectory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "DecryptedFiles");
     Directory.CreateDirectory(decryptedDirectory);
-    var decryptedFilePath = Path.Combine(decryptedDirectory,
-      $"{Path.GetFileNameWithoutExtension(filePath)}-decrypted{Path.GetExtension(filePath)}");
-    rsa.DecryptFile(filePath, decryptedFilePath, privateKeyPem);
+    return Path.Combine(decryptedDirectory,
+      $"{Path.GetFileNameWithoutExtension(inputPath)}-decrypted{Path.GetExtension(inputPath)}");
   }
 
-  private void FinalizeProcess(Button? button)
+  private bool AreInputsValid()
+    => !string.IsNullOrEmpty(_txtDataOrFilePath.Text) && !string.IsNullOrEmpty(_txtImportedKeyName.Text);
+
+  private void ToggleProgress(bool isProcessing)
   {
+    _progressBar.Value = isProcessing ? 50 : 100;
+
+    if (isProcessing) return;
+
     _stopWatch.Stop();
-    _progressBar.Value = 100;
     DisplayTimeTook(_stopWatch.ElapsedMilliseconds);
-    if (button is not null) ToggleButton(button);
   }
+
+  private static void ToggleButton(Button button)
+    => button.Enabled = !button.Enabled;
 
   private void DisplayTimeTook(long elapsedMilliseconds)
     => _lblTimeTook.Text = $"Time took: {elapsedMilliseconds} ms";
 
-  private static void ShowWarningMessage(string message) => MessageBox.Show(
-    message,
-    "Warning",
-    MessageBoxButtons.OK,
-    MessageBoxIcon.Warning);
+  private static void HandleCryptographicException(CryptographicException ex)
+  {
+    var errorMessage = ex.HResult switch
+    {
+      unchecked((int)0x8009000D) => "Invalid key format or corrupted key file",
+      unchecked((int)0x80090005) => "Key size mismatch or invalid padding",
+      _ => $"Cryptographic error: {ex.Message}\nError code: 0x{ex.HResult:X8}"
+    };
 
-  private static void ShowSuccessMessage(string message) => MessageBox.Show(
-    message,
-    "Success",
-    MessageBoxButtons.OK,
-    MessageBoxIcon.Information);
-
-  private static void ShowErrorMessage(string message) => MessageBox.Show(
-    message,
-    "Error",
-    MessageBoxButtons.OK,
-    MessageBoxIcon.Error);
-
-  private static void ToggleButton(Button button)
-    => button.Enabled = !button.Enabled;
+    MessageNotifier.ShowError(errorMessage);
+  }
 }
