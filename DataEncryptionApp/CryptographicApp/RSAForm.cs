@@ -9,6 +9,8 @@ namespace CryptographicApp;
 
 public partial class RSAForm : Form
 {
+  private const string EncryptedOutputDirectory = "EncryptedFiles";
+  private const string DecryptionOutputDirectory = "DecryptedFiles";
   private readonly Button _btnBrowse, _btnGenerateKey, _btnImportKey;
   private readonly Button _btnEncrypt, _btnDecrypt;
   private readonly ComboBox _cbDataFormat, _cbPadding, _cbKeySize;
@@ -269,7 +271,7 @@ public partial class RSAForm : Form
   private static string GetEncryptedFilePath(string inputPath)
   {
     var encryptedDirectory = Path.Combine(
-      Path.GetDirectoryName(Application.ExecutablePath)!, "EncryptedFiles");
+      Path.GetDirectoryName(Application.ExecutablePath)!, EncryptedOutputDirectory);
     Directory.CreateDirectory(encryptedDirectory);
     return Path.Combine(encryptedDirectory,
       $"{Path.GetFileNameWithoutExtension(inputPath)}-encrypted{Path.GetExtension(inputPath)}");
@@ -278,7 +280,7 @@ public partial class RSAForm : Form
   private static string GetDecryptedFilePath(string inputPath)
   {
     var decryptedDirectory = Path.Combine(
-      Path.GetDirectoryName(Application.ExecutablePath)!, "DecryptedFiles");
+      Path.GetDirectoryName(Application.ExecutablePath)!, DecryptionOutputDirectory);
     Directory.CreateDirectory(decryptedDirectory);
     return Path.Combine(decryptedDirectory,
       $"{Path.GetFileNameWithoutExtension(inputPath)}-decrypted{Path.GetExtension(inputPath)}");
