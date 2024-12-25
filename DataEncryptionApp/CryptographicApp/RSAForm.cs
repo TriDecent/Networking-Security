@@ -31,6 +31,10 @@ public partial class RSAForm : Form
   private RSAEncryptionPadding _selectedRSAPadding = RSAEncryptionPadding.Pkcs1;
   private int _selectedRSAKeySize = 1024;
 
+  private int _selectedAESKeySize = 128;
+  private PaddingMode _selectedAESPadding = PaddingMode.PKCS7;
+  private Enums.HashAlgorithm _selectedHashAlgorithm = Enums.HashAlgorithm.SHA256;
+
   public RSAForm()
   {
     InitializeComponent();
@@ -74,8 +78,8 @@ public partial class RSAForm : Form
     _cbHashAlgorithm.DataSource = Enum.GetValues<Enums.HashAlgorithm>();
 
     _cbDataFormat.SelectedValueChanged += (s, e) => OnSelectedDataFormatChanged();
-    _cbRSAPadding.SelectedValueChanged += (s, e) => OnSelectedPaddingChanged();
-    _cbRSAKeySize.SelectedValueChanged += (s, e) => OnSelectedKeySizeChanged();
+    _cbRSAPadding.SelectedValueChanged += (s, e) => OnSelectedRSAPaddingChanged();
+    _cbRSAKeySize.SelectedValueChanged += (s, e) => OnSelectedRSAKeySizeChanged();
 
     _btnGenerateRSAKey.Click += (s, e) => OnEncryptOrDecryptStart();
     _btnRSADecrypt.Click += (s, e) => OnEncryptOrDecryptStart();
@@ -86,6 +90,10 @@ public partial class RSAForm : Form
     _btnRSAEncrypt.Click += async (s, e) => await OnEncryptClickedAsync();
     _btnRSADecrypt.Click += async (s, e) => await OnDecryptClickedAsync();
     _btnBrowse.Click += (s, e) => OnBrowseClicked();
+
+    _cbAESPadding.SelectedValueChanged += (s, e) => OnSelectedAESPaddingChanged();
+    _cbRSAKeySize.SelectedValueChanged += (s, e) => OnSelectedAESKeySizeChanged();
+    _cbHashAlgorithm.SelectedValueChanged += (s, e) => OnSelectedHashAlgorithmChanged();
   }
 
   private void OnSelectedDataFormatChanged()
@@ -101,11 +109,20 @@ public partial class RSAForm : Form
     _selectedDataFormat = selectedFormat;
   }
 
-  private void OnSelectedPaddingChanged()
+  private void OnSelectedRSAPaddingChanged()
     => _selectedRSAPadding = (RSAEncryptionPadding)_cbRSAPadding.SelectedItem!;
 
-  private void OnSelectedKeySizeChanged()
+  private void OnSelectedRSAKeySizeChanged()
     => _selectedRSAKeySize = (int)_cbRSAKeySize.SelectedItem!;
+
+  private void OnSelectedAESPaddingChanged()
+    => _selectedAESPadding = (PaddingMode)_cbAESKeySize.SelectedItem!;
+
+  private void OnSelectedAESKeySizeChanged()
+    => _selectedAESKeySize = (int)_cbAESKeySize.SelectedItem!;
+
+  private void OnSelectedHashAlgorithmChanged() 
+    => _selectedHashAlgorithm = (Enums.HashAlgorithm)_cbHashAlgorithm.SelectedItem!;
 
   private void OnEncryptOrDecryptStart()
   {
