@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using CryptographicApp.CryptographicCores.Asymmetric;
 using CryptographicApp.CryptographicCores.KeysRepository;
+using CryptographicApp.CryptographicCores.Symmetric;
 using CryptographicApp.Enums;
+using CryptographicApp.Models;
 using CryptographicApp.Utils;
 
 namespace CryptographicApp;
@@ -17,6 +19,7 @@ public partial class RSAForm : Form
   private readonly TextBox _txtDataOrFilePath, _txtResult, _txtImportedRSAKeyName;
   private readonly Button _btnHybridEncrypt, _btnHybridDecrypt;
   private readonly Button _btnGenerateAESKey, _btnImportAESKey;
+  private readonly TextBox _txtImportedAESKeyName;
   private readonly ComboBox _cbAESPadding, _cbAESKeySize, _cbHashAlgorithm;
   private readonly CheckBox _cbUseMultithreading;
   private readonly Label _lblTimeTook;
@@ -25,7 +28,8 @@ public partial class RSAForm : Form
 
   private readonly SecureKeyStorage _keyStorage = new();
 
-  private string _importedKeyFilePath = "";
+  private string _importedRSAKeyFilePath = "";
+  private string _importedAESKeyFilePath = "";
 
   private DataFormat _selectedDataFormat = DataFormat.Text;
   private RSAEncryptionPadding _selectedRSAPadding = RSAEncryptionPadding.Pkcs1;
@@ -57,6 +61,7 @@ public partial class RSAForm : Form
     _btnImportAESKey = btnImportAESKey;
     _cbAESPadding = cbAESPadding;
     _cbAESKeySize = cbAESKeySize;
+    _txtImportedAESKeyName = txtImportedAESKeyName;
     _cbHashAlgorithm = cbHashAlgorithm;
     _lblTimeTook = lblTimeTook;
     _progressBar = progressBar;
@@ -81,12 +86,12 @@ public partial class RSAForm : Form
     _cbRSAPadding.SelectedValueChanged += (s, e) => OnSelectedRSAPaddingChanged();
     _cbRSAKeySize.SelectedValueChanged += (s, e) => OnSelectedRSAKeySizeChanged();
 
-    _btnGenerateRSAKey.Click += (s, e) => OnEncryptOrDecryptStart();
-    _btnRSADecrypt.Click += (s, e) => OnEncryptOrDecryptStart();
-    _btnRSAEncrypt.Click += (s, e) => OnEncryptOrDecryptStart();
+    _btnGenerateRSAKey.Click += (s, e) => OnProcessStart();
+    _btnRSADecrypt.Click += (s, e) => OnProcessStart();
+    _btnRSAEncrypt.Click += (s, e) => OnProcessStart();
 
-    _btnGenerateRSAKey.Click += async (s, e) => await OnGenerateKeyClickedAsync();
-    _btnImportRSAKey.Click += (s, e) => OnImportKeyClicked();
+    _btnGenerateRSAKey.Click += async (s, e) => await OnGenerateRSAKeyClickedAsync();
+    _btnImportRSAKey.Click += (s, e) => OnImportRSAKeyClicked();
     _btnRSAEncrypt.Click += async (s, e) => await OnEncryptClickedAsync();
     _btnRSADecrypt.Click += async (s, e) => await OnDecryptClickedAsync();
     _btnBrowse.Click += (s, e) => OnBrowseClicked();
@@ -94,6 +99,10 @@ public partial class RSAForm : Form
     _cbAESPadding.SelectedValueChanged += (s, e) => OnSelectedAESPaddingChanged();
     _cbRSAKeySize.SelectedValueChanged += (s, e) => OnSelectedAESKeySizeChanged();
     _cbHashAlgorithm.SelectedValueChanged += (s, e) => OnSelectedHashAlgorithmChanged();
+
+    _btnGenerateAESKey.Click += (s, e) => OnProcessStart();
+
+    _btnGenerateAESKey.Click += async (s, e) => await OnGenerateAESKeyClickedAsync();
   }
 
   private void OnSelectedDataFormatChanged()
@@ -124,7 +133,7 @@ public partial class RSAForm : Form
   private void OnSelectedHashAlgorithmChanged()
     => _selectedHashAlgorithm = (Enums.HashAlgorithm)_cbHashAlgorithm.SelectedItem!;
 
-  private void OnEncryptOrDecryptStart()
+  private void OnProcessStart()
   {
     _stopWatch.Restart();
     _progressBar.Value = 0;
@@ -143,11 +152,8 @@ public partial class RSAForm : Form
     }
   }
 
-  private async Task OnGenerateKeyClickedAsync()
+  private async Task OnGenerateKeyClickedAsync<TEncryption, TKey>(Func<TEncryption> createEncryption, Func<TEncryption, TKey> generateKey, Action<TKey> saveKey, string keysFolder)
   {
-    var rsa = RSA.Create(_selectedRSAKeySize);
-    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
-
     if (_cbUseMultithreading.Checked)
     {
       await Task.Run(GenerateAndSaveKeys);
@@ -158,17 +164,44 @@ public partial class RSAForm : Form
     }
 
     ToggleProgress(false);
-    MessageNotifier.ShowSuccess(
-      "Keys have been successfully generated and saved in the KeyPairs folder.");
+    MessageNotifier.ShowSuccess($"Keys have been successfully generated and saved in the {keysFolder} folder.");
 
     void GenerateAndSaveKeys()
     {
-      var (publicKey, privateKey) = rsaEncryption.GenerateKey();
-      _keyStorage.SaveKeyPair(new RSAKey(publicKey, privateKey));
+      var encryption = createEncryption();
+      var key = generateKey(encryption);
+      saveKey(key);
     }
   }
 
-  private void OnImportKeyClicked()
+  private async Task OnGenerateAESKeyClickedAsync()
+  {
+    using var aes = Aes.Create();
+    aes.KeySize = _selectedAESKeySize;
+
+    await OnGenerateKeyClickedAsync(
+      createEncryption: () => new AESEncryption(aes, _selectedAESPadding),
+      generateKey: encryption => encryption.GenerateKey(),
+      saveKey: _keyStorage.SaveAESKey,
+      keysFolder: SecureKeyStorage.AESKeysFolder
+    );
+  }
+
+  private async Task OnGenerateRSAKeyClickedAsync()
+  {
+    await OnGenerateKeyClickedAsync(
+        createEncryption: () => new RSAEncryption(RSA.Create(_selectedRSAKeySize), _selectedRSAPadding),
+        generateKey: encryption =>
+        {
+          var (publicKey, privateKey) = encryption.GenerateKey();
+          return new RSAKey(publicKey, privateKey);
+        },
+        saveKey: _keyStorage.SaveKeyPair,
+        keysFolder: SecureKeyStorage.RSAKeysFolder
+    );
+  }
+
+  private void OnImportRSAKeyClicked()
   {
     using var openDialog = new OpenFileDialog
     {
@@ -177,8 +210,8 @@ public partial class RSAForm : Form
 
     if (openDialog.ShowDialog() == DialogResult.OK)
     {
-      _importedKeyFilePath = openDialog.FileName;
-      _txtImportedRSAKeyName.Text = Path.GetFileName(_importedKeyFilePath);
+      _importedRSAKeyFilePath = openDialog.FileName;
+      _txtImportedRSAKeyName.Text = Path.GetFileName(_importedRSAKeyFilePath);
     }
   }
 
@@ -216,8 +249,12 @@ public partial class RSAForm : Form
 
     try
     {
+      var selectedDataFormatCache = _selectedDataFormat;
       await runCryptographicOperation();
       ToggleProgress(false);
+
+      if (selectedDataFormatCache != DataFormat.File) return;
+
       if (runCryptographicOperation.Method.Name == nameof(PerformEncryptionAsync))
       {
         MessageNotifier.ShowSuccess(
@@ -246,7 +283,7 @@ public partial class RSAForm : Form
 
   private Task PerformEncryptionAsync()
   {
-    var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedKeyFilePath);
+    var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedRSAKeyFilePath);
     var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
@@ -256,7 +293,7 @@ public partial class RSAForm : Form
 
   private Task PerformDecryptionAsync()
   {
-    var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedKeyFilePath);
+    var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedRSAKeyFilePath);
     var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked

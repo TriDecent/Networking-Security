@@ -1,12 +1,13 @@
 using System.Security.Cryptography;
 using System.Text;
 using CryptographicApp.Enums;
+using CryptographicApp.Models;
 
 namespace CryptographicApp.CryptographicCores.Asymmetric;
 
 public interface IRSAEncryption
 {
-  (string PublicKey, string PrivateKey) GenerateKey();
+  RSAKey GenerateKey();
   string Encrypt(string data, string publicKeyPem, DataFormat dataFormat);
   string Decrypt(string encryptedData, string privateKeyPem, DataFormat dataFormat);
   void EncryptFile(string inputFile, string outputFile, string publicKeyPem);
@@ -26,12 +27,12 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
   private readonly RSA _rsa = rsa;
   private readonly RSAEncryptionPadding _padding = padding;
 
-  public (string PublicKey, string PrivateKey) GenerateKey()
+  public RSAKey GenerateKey()
   {
     var publicKey = _rsa.ExportRSAPublicKeyPem();
     var privateKey = _rsa.ExportRSAPrivateKeyPem();
 
-    return (publicKey, privateKey);
+    return new RSAKey(publicKey, privateKey);
   }
 
   public string Encrypt(string data, string publicKeyPem, DataFormat dataFormat)

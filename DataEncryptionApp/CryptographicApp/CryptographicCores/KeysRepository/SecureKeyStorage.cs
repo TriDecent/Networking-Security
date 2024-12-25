@@ -7,18 +7,22 @@ namespace CryptographicApp.CryptographicCores.KeysRepository;
 public partial class SecureKeyStorage
 {
   private const string hyphen = "-----";
+
   [GeneratedRegex(@"public_key(\d+)\.pem")]
   private static partial Regex RSAKeyNumberPattern();
 
   [GeneratedRegex(@"aes_key(\d+)\.key")]
   private static partial Regex AESKeyNumberPattern();
 
+  public const string RSAKeysFolder = "RSAKeys";
+  public const string AESKeysFolder = "AESKeys";
+
   public string ReadSingleRSAKey(string filePath)
-    => File.ReadAllText(filePath);
+  => File.ReadAllText(filePath);
 
   public void SaveKeyPair(RSAKey keyPair)
   {
-    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "KeyPairs");
+    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, RSAKeysFolder);
     Directory.CreateDirectory(directory);
 
     var newNumber = Directory.GetFiles(directory, "public_key*.pem")
@@ -34,7 +38,7 @@ public partial class SecureKeyStorage
 
   public void SaveAESKey(AESKey aesKey)
   {
-    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "AESKeys");
+    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, AESKeysFolder);
     Directory.CreateDirectory(directory);
 
     var newNumber = Directory.GetFiles(directory, "aes_key*.key")
