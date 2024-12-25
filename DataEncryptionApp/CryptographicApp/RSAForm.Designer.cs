@@ -34,23 +34,33 @@
       txtDataOrFilePath = new TextBox();
       lblDataOrFilePath = new Label();
       lblDataFormat = new Label();
-      btnImportKey = new Button();
-      btnGenerateKey = new Button();
+      btnImportRSAKey = new Button();
+      btnGenerateRSAKey = new Button();
       btnBrowse = new Button();
       progressBar = new ProgressBar();
-      lblProgress = new Label();
       lblTimeTook = new Label();
       txtResult = new TextBox();
       lblEncryptedText = new Label();
       btnEncrypt = new Button();
       btnDecrypt = new Button();
-      cbPadding = new ComboBox();
-      lblPadding = new Label();
-      txtImportedKeyName = new TextBox();
-      lblKeySize = new Label();
-      cbKeySize = new ComboBox();
+      cbRSAPadding = new ComboBox();
+      lblRSAPadding = new Label();
+      txtImportedRSAKeyName = new TextBox();
+      lblRSAKeySize = new Label();
+      cbRSAKeySize = new ComboBox();
       timer = new System.Windows.Forms.Timer(components);
       cbUseMultithreading = new CheckBox();
+      btnHybridEncrypt = new Button();
+      btnHybridDecrypt = new Button();
+      cbAESKeySize = new ComboBox();
+      lblAESKeySize = new Label();
+      btnGenerateAESKey = new Button();
+      btnImportAESKey = new Button();
+      txtImportedAESKeyName = new TextBox();
+      lblAESPadding = new Label();
+      cbAESPadding = new ComboBox();
+      lblHashAlgorithm = new Label();
+      cbHashAlgorithm = new ComboBox();
       SuspendLayout();
       // 
       // cbDataFormat
@@ -93,25 +103,25 @@
       lblDataFormat.TabIndex = 9;
       lblDataFormat.Text = "Data Format";
       // 
-      // btnImportKey
+      // btnImportRSAKey
       // 
-      btnImportKey.Font = new Font("Segoe UI", 12F);
-      btnImportKey.Location = new Point(387, 89);
-      btnImportKey.Name = "btnImportKey";
-      btnImportKey.Size = new Size(95, 29);
-      btnImportKey.TabIndex = 13;
-      btnImportKey.Text = "Import Key";
-      btnImportKey.UseVisualStyleBackColor = true;
+      btnImportRSAKey.Font = new Font("Segoe UI", 12F);
+      btnImportRSAKey.Location = new Point(387, 89);
+      btnImportRSAKey.Name = "btnImportRSAKey";
+      btnImportRSAKey.Size = new Size(95, 29);
+      btnImportRSAKey.TabIndex = 13;
+      btnImportRSAKey.Text = "Import Key";
+      btnImportRSAKey.UseVisualStyleBackColor = true;
       // 
-      // btnGenerateKey
+      // btnGenerateRSAKey
       // 
-      btnGenerateKey.Font = new Font("Segoe UI", 12F);
-      btnGenerateKey.Location = new Point(268, 89);
-      btnGenerateKey.Name = "btnGenerateKey";
-      btnGenerateKey.Size = new Size(113, 29);
-      btnGenerateKey.TabIndex = 14;
-      btnGenerateKey.Text = "Generate Key";
-      btnGenerateKey.UseVisualStyleBackColor = true;
+      btnGenerateRSAKey.Font = new Font("Segoe UI", 12F);
+      btnGenerateRSAKey.Location = new Point(268, 89);
+      btnGenerateRSAKey.Name = "btnGenerateRSAKey";
+      btnGenerateRSAKey.Size = new Size(113, 29);
+      btnGenerateRSAKey.TabIndex = 14;
+      btnGenerateRSAKey.Text = "Generate Key";
+      btnGenerateRSAKey.UseVisualStyleBackColor = true;
       // 
       // btnBrowse
       // 
@@ -125,26 +135,16 @@
       // 
       // progressBar
       // 
-      progressBar.Location = new Point(89, 268);
+      progressBar.Location = new Point(12, 364);
       progressBar.Name = "progressBar";
-      progressBar.Size = new Size(560, 23);
+      progressBar.Size = new Size(633, 23);
       progressBar.TabIndex = 16;
-      // 
-      // lblProgress
-      // 
-      lblProgress.AutoSize = true;
-      lblProgress.Font = new Font("Segoe UI", 12F);
-      lblProgress.Location = new Point(12, 268);
-      lblProgress.Name = "lblProgress";
-      lblProgress.Size = new Size(71, 21);
-      lblProgress.TabIndex = 17;
-      lblProgress.Text = "Progress";
       // 
       // lblTimeTook
       // 
       lblTimeTook.AutoSize = true;
       lblTimeTook.Font = new Font("Segoe UI", 12F);
-      lblTimeTook.Location = new Point(12, 312);
+      lblTimeTook.Location = new Point(8, 408);
       lblTimeTook.Name = "lblTimeTook";
       lblTimeTook.Size = new Size(95, 21);
       lblTimeTook.TabIndex = 18;
@@ -153,7 +153,7 @@
       // txtResult
       // 
       txtResult.Font = new Font("Segoe UI", 12F);
-      txtResult.Location = new Point(16, 213);
+      txtResult.Location = new Point(12, 309);
       txtResult.Name = "txtResult";
       txtResult.ReadOnly = true;
       txtResult.Size = new Size(633, 29);
@@ -163,7 +163,7 @@
       // 
       lblEncryptedText.AutoSize = true;
       lblEncryptedText.Font = new Font("Segoe UI", 12F);
-      lblEncryptedText.Location = new Point(12, 189);
+      lblEncryptedText.Location = new Point(21, 292);
       lblEncryptedText.Name = "lblEncryptedText";
       lblEncryptedText.Size = new Size(53, 21);
       lblEncryptedText.TabIndex = 20;
@@ -172,7 +172,7 @@
       // btnEncrypt
       // 
       btnEncrypt.Font = new Font("Segoe UI", 12F);
-      btnEncrypt.Location = new Point(488, 308);
+      btnEncrypt.Location = new Point(484, 404);
       btnEncrypt.Name = "btnEncrypt";
       btnEncrypt.Size = new Size(71, 29);
       btnEncrypt.TabIndex = 21;
@@ -182,64 +182,64 @@
       // btnDecrypt
       // 
       btnDecrypt.Font = new Font("Segoe UI", 12F);
-      btnDecrypt.Location = new Point(574, 308);
+      btnDecrypt.Location = new Point(570, 404);
       btnDecrypt.Name = "btnDecrypt";
       btnDecrypt.Size = new Size(75, 29);
       btnDecrypt.TabIndex = 22;
       btnDecrypt.Text = "Decrypt";
       btnDecrypt.UseVisualStyleBackColor = true;
       // 
-      // cbPadding
+      // cbRSAPadding
       // 
-      cbPadding.DropDownStyle = ComboBoxStyle.DropDownList;
-      cbPadding.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-      cbPadding.FormattingEnabled = true;
-      cbPadding.Items.AddRange(new object[] { "Text", "Hex", "File" });
-      cbPadding.Location = new Point(127, 89);
-      cbPadding.Name = "cbPadding";
-      cbPadding.Size = new Size(135, 29);
-      cbPadding.TabIndex = 23;
+      cbRSAPadding.DropDownStyle = ComboBoxStyle.DropDownList;
+      cbRSAPadding.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      cbRSAPadding.FormattingEnabled = true;
+      cbRSAPadding.Items.AddRange(new object[] { "Text", "Hex", "File" });
+      cbRSAPadding.Location = new Point(128, 140);
+      cbRSAPadding.Name = "cbRSAPadding";
+      cbRSAPadding.Size = new Size(135, 29);
+      cbRSAPadding.TabIndex = 23;
       // 
-      // lblPadding
+      // lblRSAPadding
       // 
-      lblPadding.AutoSize = true;
-      lblPadding.Font = new Font("Segoe UI", 12F);
-      lblPadding.Location = new Point(12, 93);
-      lblPadding.Name = "lblPadding";
-      lblPadding.Size = new Size(66, 21);
-      lblPadding.TabIndex = 24;
-      lblPadding.Text = "Padding";
+      lblRSAPadding.AutoSize = true;
+      lblRSAPadding.Font = new Font("Segoe UI", 12F);
+      lblRSAPadding.Location = new Point(12, 143);
+      lblRSAPadding.Name = "lblRSAPadding";
+      lblRSAPadding.Size = new Size(99, 21);
+      lblRSAPadding.TabIndex = 24;
+      lblRSAPadding.Text = "RSA Padding";
       // 
-      // txtImportedKeyName
+      // txtImportedRSAKeyName
       // 
-      txtImportedKeyName.BorderStyle = BorderStyle.FixedSingle;
-      txtImportedKeyName.Enabled = false;
-      txtImportedKeyName.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-      txtImportedKeyName.Location = new Point(488, 89);
-      txtImportedKeyName.Name = "txtImportedKeyName";
-      txtImportedKeyName.Size = new Size(157, 29);
-      txtImportedKeyName.TabIndex = 25;
+      txtImportedRSAKeyName.BorderStyle = BorderStyle.FixedSingle;
+      txtImportedRSAKeyName.Enabled = false;
+      txtImportedRSAKeyName.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      txtImportedRSAKeyName.Location = new Point(488, 89);
+      txtImportedRSAKeyName.Name = "txtImportedRSAKeyName";
+      txtImportedRSAKeyName.Size = new Size(157, 29);
+      txtImportedRSAKeyName.TabIndex = 25;
       // 
-      // lblKeySize
+      // lblRSAKeySize
       // 
-      lblKeySize.AutoSize = true;
-      lblKeySize.Font = new Font("Segoe UI", 12F);
-      lblKeySize.Location = new Point(12, 146);
-      lblKeySize.Name = "lblKeySize";
-      lblKeySize.Size = new Size(106, 21);
-      lblKeySize.TabIndex = 26;
-      lblKeySize.Text = "Key Size In Bit";
+      lblRSAKeySize.AutoSize = true;
+      lblRSAKeySize.Font = new Font("Segoe UI", 12F);
+      lblRSAKeySize.Location = new Point(12, 93);
+      lblRSAKeySize.Name = "lblRSAKeySize";
+      lblRSAKeySize.Size = new Size(100, 21);
+      lblRSAKeySize.TabIndex = 26;
+      lblRSAKeySize.Text = "RSA Key Size";
       // 
-      // cbKeySize
+      // cbRSAKeySize
       // 
-      cbKeySize.DropDownStyle = ComboBoxStyle.DropDownList;
-      cbKeySize.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-      cbKeySize.FormattingEnabled = true;
-      cbKeySize.Items.AddRange(new object[] { "Text", "Hex", "File" });
-      cbKeySize.Location = new Point(127, 143);
-      cbKeySize.Name = "cbKeySize";
-      cbKeySize.Size = new Size(96, 29);
-      cbKeySize.TabIndex = 27;
+      cbRSAKeySize.DropDownStyle = ComboBoxStyle.DropDownList;
+      cbRSAKeySize.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      cbRSAKeySize.FormattingEnabled = true;
+      cbRSAKeySize.Items.AddRange(new object[] { "Text", "Hex", "File" });
+      cbRSAKeySize.Location = new Point(128, 88);
+      cbRSAKeySize.Name = "cbRSAKeySize";
+      cbRSAKeySize.Size = new Size(134, 29);
+      cbRSAKeySize.TabIndex = 27;
       // 
       // cbUseMultithreading
       // 
@@ -252,27 +252,150 @@
       cbUseMultithreading.Text = "Multithreading";
       cbUseMultithreading.UseVisualStyleBackColor = true;
       // 
+      // btnHybridEncrypt
+      // 
+      btnHybridEncrypt.Font = new Font("Segoe UI", 12F);
+      btnHybridEncrypt.Location = new Point(203, 404);
+      btnHybridEncrypt.Name = "btnHybridEncrypt";
+      btnHybridEncrypt.Size = new Size(122, 29);
+      btnHybridEncrypt.TabIndex = 29;
+      btnHybridEncrypt.Text = "Hybrid Encrypt";
+      btnHybridEncrypt.UseVisualStyleBackColor = true;
+      // 
+      // btnHybridDecrypt
+      // 
+      btnHybridDecrypt.Font = new Font("Segoe UI", 12F);
+      btnHybridDecrypt.Location = new Point(340, 404);
+      btnHybridDecrypt.Name = "btnHybridDecrypt";
+      btnHybridDecrypt.Size = new Size(128, 29);
+      btnHybridDecrypt.TabIndex = 30;
+      btnHybridDecrypt.Text = "Hybrid Decrypt";
+      btnHybridDecrypt.UseVisualStyleBackColor = true;
+      // 
+      // cbAESKeySize
+      // 
+      cbAESKeySize.DropDownStyle = ComboBoxStyle.DropDownList;
+      cbAESKeySize.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      cbAESKeySize.FormattingEnabled = true;
+      cbAESKeySize.Items.AddRange(new object[] { "Text", "Hex", "File" });
+      cbAESKeySize.Location = new Point(127, 193);
+      cbAESKeySize.Name = "cbAESKeySize";
+      cbAESKeySize.Size = new Size(136, 29);
+      cbAESKeySize.TabIndex = 31;
+      // 
+      // lblAESKeySize
+      // 
+      lblAESKeySize.AutoSize = true;
+      lblAESKeySize.Font = new Font("Segoe UI", 12F);
+      lblAESKeySize.Location = new Point(12, 196);
+      lblAESKeySize.Name = "lblAESKeySize";
+      lblAESKeySize.Size = new Size(98, 21);
+      lblAESKeySize.TabIndex = 32;
+      lblAESKeySize.Text = "AES Key Size";
+      // 
+      // btnGenerateAESKey
+      // 
+      btnGenerateAESKey.Font = new Font("Segoe UI", 12F);
+      btnGenerateAESKey.Location = new Point(269, 193);
+      btnGenerateAESKey.Name = "btnGenerateAESKey";
+      btnGenerateAESKey.Size = new Size(113, 29);
+      btnGenerateAESKey.TabIndex = 33;
+      btnGenerateAESKey.Text = "Generate Key";
+      btnGenerateAESKey.UseVisualStyleBackColor = true;
+      // 
+      // btnImportAESKey
+      // 
+      btnImportAESKey.Font = new Font("Segoe UI", 12F);
+      btnImportAESKey.Location = new Point(388, 193);
+      btnImportAESKey.Name = "btnImportAESKey";
+      btnImportAESKey.Size = new Size(95, 29);
+      btnImportAESKey.TabIndex = 34;
+      btnImportAESKey.Text = "Import Key";
+      btnImportAESKey.UseVisualStyleBackColor = true;
+      // 
+      // txtImportedAESKeyName
+      // 
+      txtImportedAESKeyName.BorderStyle = BorderStyle.FixedSingle;
+      txtImportedAESKeyName.Enabled = false;
+      txtImportedAESKeyName.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      txtImportedAESKeyName.Location = new Point(488, 196);
+      txtImportedAESKeyName.Name = "txtImportedAESKeyName";
+      txtImportedAESKeyName.Size = new Size(157, 29);
+      txtImportedAESKeyName.TabIndex = 35;
+      // 
+      // lblAESPadding
+      // 
+      lblAESPadding.AutoSize = true;
+      lblAESPadding.Font = new Font("Segoe UI", 12F);
+      lblAESPadding.Location = new Point(12, 251);
+      lblAESPadding.Name = "lblAESPadding";
+      lblAESPadding.Size = new Size(97, 21);
+      lblAESPadding.TabIndex = 36;
+      lblAESPadding.Text = "AES Padding";
+      // 
+      // cbAESPadding
+      // 
+      cbAESPadding.DropDownStyle = ComboBoxStyle.DropDownList;
+      cbAESPadding.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      cbAESPadding.FormattingEnabled = true;
+      cbAESPadding.Items.AddRange(new object[] { "Text", "Hex", "File" });
+      cbAESPadding.Location = new Point(127, 248);
+      cbAESPadding.Name = "cbAESPadding";
+      cbAESPadding.Size = new Size(135, 29);
+      cbAESPadding.TabIndex = 37;
+      // 
+      // lblHashAlgorithm
+      // 
+      lblHashAlgorithm.AutoSize = true;
+      lblHashAlgorithm.Font = new Font("Segoe UI", 12F);
+      lblHashAlgorithm.Location = new Point(363, 251);
+      lblHashAlgorithm.Name = "lblHashAlgorithm";
+      lblHashAlgorithm.Size = new Size(119, 21);
+      lblHashAlgorithm.TabIndex = 38;
+      lblHashAlgorithm.Text = "Hash Algorithm";
+      // 
+      // cbHashAlgorithm
+      // 
+      cbHashAlgorithm.DropDownStyle = ComboBoxStyle.DropDownList;
+      cbHashAlgorithm.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      cbHashAlgorithm.FormattingEnabled = true;
+      cbHashAlgorithm.Items.AddRange(new object[] { "Text", "Hex", "File" });
+      cbHashAlgorithm.Location = new Point(488, 248);
+      cbHashAlgorithm.Name = "cbHashAlgorithm";
+      cbHashAlgorithm.Size = new Size(157, 29);
+      cbHashAlgorithm.TabIndex = 39;
+      // 
       // RSAForm
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
-      ClientSize = new Size(657, 351);
+      ClientSize = new Size(657, 445);
+      Controls.Add(cbHashAlgorithm);
+      Controls.Add(lblHashAlgorithm);
+      Controls.Add(cbAESPadding);
+      Controls.Add(lblAESPadding);
+      Controls.Add(txtImportedAESKeyName);
+      Controls.Add(btnImportAESKey);
+      Controls.Add(btnGenerateAESKey);
+      Controls.Add(lblAESKeySize);
+      Controls.Add(cbAESKeySize);
+      Controls.Add(btnHybridDecrypt);
+      Controls.Add(btnHybridEncrypt);
       Controls.Add(cbUseMultithreading);
-      Controls.Add(cbKeySize);
-      Controls.Add(lblKeySize);
-      Controls.Add(txtImportedKeyName);
-      Controls.Add(lblPadding);
-      Controls.Add(cbPadding);
+      Controls.Add(cbRSAKeySize);
+      Controls.Add(lblRSAKeySize);
+      Controls.Add(txtImportedRSAKeyName);
+      Controls.Add(lblRSAPadding);
+      Controls.Add(cbRSAPadding);
       Controls.Add(btnDecrypt);
       Controls.Add(btnEncrypt);
       Controls.Add(lblEncryptedText);
       Controls.Add(txtResult);
       Controls.Add(lblTimeTook);
-      Controls.Add(lblProgress);
       Controls.Add(progressBar);
       Controls.Add(btnBrowse);
-      Controls.Add(btnGenerateKey);
-      Controls.Add(btnImportKey);
+      Controls.Add(btnGenerateRSAKey);
+      Controls.Add(btnImportRSAKey);
       Controls.Add(cbDataFormat);
       Controls.Add(txtDataOrFilePath);
       Controls.Add(lblDataOrFilePath);
@@ -292,22 +415,32 @@
     private TextBox txtDataOrFilePath;
     private Label lblDataOrFilePath;
     private Label lblDataFormat;
-    private Button btnImportKey;
-    private Button btnGenerateKey;
+    private Button btnImportRSAKey;
+    private Button btnGenerateRSAKey;
     private Button btnBrowse;
     private ProgressBar progressBar;
-    private Label lblProgress;
     private Label lblTimeTook;
     private TextBox txtResult;
     private Label lblEncryptedText;
     private Button btnEncrypt;
     private Button btnDecrypt;
-    private ComboBox cbPadding;
-    private Label lblPadding;
-    private TextBox txtImportedKeyName;
-    private Label lblKeySize;
-    private ComboBox cbKeySize;
+    private ComboBox cbRSAPadding;
+    private Label lblRSAPadding;
+    private TextBox txtImportedRSAKeyName;
+    private Label lblRSAKeySize;
+    private ComboBox cbRSAKeySize;
     private System.Windows.Forms.Timer timer;
     private CheckBox cbUseMultithreading;
+    private Button btnHybridEncrypt;
+    private Button btnHybridDecrypt;
+    private ComboBox cbAESKeySize;
+    private Label lblAESKeySize;
+    private Button btnGenerateAESKey;
+    private Button btnImportAESKey;
+    private TextBox txtImportedAESKeyName;
+    private Label lblAESPadding;
+    private ComboBox cbAESPadding;
+    private Label lblHashAlgorithm;
+    private ComboBox cbHashAlgorithm;
   }
 }

@@ -11,10 +11,13 @@ public partial class RSAForm : Form
 {
   private const string EncryptedOutputDirectory = "EncryptedFiles";
   private const string DecryptionOutputDirectory = "DecryptedFiles";
-  private readonly Button _btnBrowse, _btnGenerateKey, _btnImportKey;
-  private readonly Button _btnEncrypt, _btnDecrypt;
-  private readonly ComboBox _cbDataFormat, _cbPadding, _cbKeySize;
-  private readonly TextBox _txtDataOrFilePath, _txtResult, _txtImportedKeyName;
+  private readonly Button _btnBrowse, _btnGenerateRSAKey, _btnImportRSAKey;
+  private readonly Button _btnRSAEncrypt, _btnRSADecrypt;
+  private readonly ComboBox _cbDataFormat, _cbRSAPadding, _cbRSAKeySize;
+  private readonly TextBox _txtDataOrFilePath, _txtResult, _txtImportedRSAKeyName;
+  private readonly Button _btnHybridEncrypt, _btnHybridDecrypt;
+  private readonly Button _btnGenerateAESKey, _btnImportAESKey;
+  private readonly ComboBox _cbAESPadding, _cbAESKeySize, _cbHashAlgorithm;
   private readonly CheckBox _cbUseMultithreading;
   private readonly Label _lblTimeTook;
   private readonly ProgressBar _progressBar;
@@ -25,49 +28,63 @@ public partial class RSAForm : Form
   private string _importedKeyFilePath = "";
 
   private DataFormat _selectedDataFormat = DataFormat.Text;
-  private RSAEncryptionPadding _selectedPadding = RSAEncryptionPadding.Pkcs1;
-  private int _selectedKeySize = 1024;
+  private RSAEncryptionPadding _selectedRSAPadding = RSAEncryptionPadding.Pkcs1;
+  private int _selectedRSAKeySize = 1024;
 
   public RSAForm()
   {
     InitializeComponent();
 
     _btnBrowse = btnBrowse;
-    _btnGenerateKey = btnGenerateKey;
-    _btnImportKey = btnImportKey;
-    _btnEncrypt = btnEncrypt;
-    _btnDecrypt = btnDecrypt;
+    _btnGenerateRSAKey = btnGenerateRSAKey;
+    _btnImportRSAKey = btnImportRSAKey;
+    _btnRSAEncrypt = btnEncrypt;
+    _btnRSADecrypt = btnDecrypt;
     _cbDataFormat = cbDataFormat;
-    _cbPadding = cbPadding;
-    _cbKeySize = cbKeySize;
+    _cbRSAPadding = cbRSAPadding;
+    _cbRSAKeySize = cbRSAKeySize;
     _txtDataOrFilePath = txtDataOrFilePath;
     _txtResult = txtResult;
-    _txtImportedKeyName = txtImportedKeyName;
+    _txtImportedRSAKeyName = txtImportedRSAKeyName;
     _cbUseMultithreading = cbUseMultithreading;
+    _btnHybridEncrypt = btnHybridEncrypt;
+    _btnHybridDecrypt = btnHybridDecrypt;
+    _btnGenerateAESKey = btnGenerateAESKey;
+    _btnImportAESKey = btnImportAESKey;
+    _cbAESPadding = cbAESPadding;
+    _cbAESKeySize = cbAESKeySize;
+    _cbHashAlgorithm = cbHashAlgorithm;
     _lblTimeTook = lblTimeTook;
     _progressBar = progressBar;
 
     _cbDataFormat.DataSource = Enum.GetValues<DataFormat>();
-    _cbPadding.DataSource = new[]
+    _cbRSAPadding.DataSource = new[]
     {
       RSAEncryptionPadding.Pkcs1, RSAEncryptionPadding.OaepSHA1,
       RSAEncryptionPadding.OaepSHA256, RSAEncryptionPadding.OaepSHA384,
       RSAEncryptionPadding.OaepSHA512,
     };
-    _cbKeySize.DataSource = new[] { 1024, 2048, 3072, 4096 };
+    _cbRSAKeySize.DataSource = new[] { 1024, 2048, 3072, 4096 };
+
+    _cbAESPadding.DataSource = new[] {
+      PaddingMode.PKCS7, PaddingMode.ISO10126, PaddingMode.ANSIX923,
+      PaddingMode.Zeros, PaddingMode.None
+    };
+    _cbAESKeySize.DataSource = new[] { 128, 192, 256 };
+    _cbHashAlgorithm.DataSource = Enum.GetValues<Enums.HashAlgorithm>();
 
     _cbDataFormat.SelectedValueChanged += (s, e) => OnSelectedDataFormatChanged();
-    _cbPadding.SelectedValueChanged += (s, e) => OnSelectedPaddingChanged();
-    _cbKeySize.SelectedValueChanged += (s, e) => OnSelectedKeySizeChanged();
+    _cbRSAPadding.SelectedValueChanged += (s, e) => OnSelectedPaddingChanged();
+    _cbRSAKeySize.SelectedValueChanged += (s, e) => OnSelectedKeySizeChanged();
 
-    _btnGenerateKey.Click += (s, e) => OnEncryptOrDecryptStart();
-    _btnDecrypt.Click += (s, e) => OnEncryptOrDecryptStart();
-    _btnEncrypt.Click += (s, e) => OnEncryptOrDecryptStart();
+    _btnGenerateRSAKey.Click += (s, e) => OnEncryptOrDecryptStart();
+    _btnRSADecrypt.Click += (s, e) => OnEncryptOrDecryptStart();
+    _btnRSAEncrypt.Click += (s, e) => OnEncryptOrDecryptStart();
 
-    _btnGenerateKey.Click += async (s, e) => await OnGenerateKeyClickedAsync();
-    _btnImportKey.Click += (s, e) => OnImportKeyClicked();
-    _btnEncrypt.Click += async (s, e) => await OnEncryptClickedAsync();
-    _btnDecrypt.Click += async (s, e) => await OnDecryptClickedAsync();
+    _btnGenerateRSAKey.Click += async (s, e) => await OnGenerateKeyClickedAsync();
+    _btnImportRSAKey.Click += (s, e) => OnImportKeyClicked();
+    _btnRSAEncrypt.Click += async (s, e) => await OnEncryptClickedAsync();
+    _btnRSADecrypt.Click += async (s, e) => await OnDecryptClickedAsync();
     _btnBrowse.Click += (s, e) => OnBrowseClicked();
   }
 
@@ -85,10 +102,10 @@ public partial class RSAForm : Form
   }
 
   private void OnSelectedPaddingChanged()
-    => _selectedPadding = (RSAEncryptionPadding)_cbPadding.SelectedItem!;
+    => _selectedRSAPadding = (RSAEncryptionPadding)_cbRSAPadding.SelectedItem!;
 
   private void OnSelectedKeySizeChanged()
-    => _selectedKeySize = (int)_cbKeySize.SelectedItem!;
+    => _selectedRSAKeySize = (int)_cbRSAKeySize.SelectedItem!;
 
   private void OnEncryptOrDecryptStart()
   {
@@ -111,8 +128,8 @@ public partial class RSAForm : Form
 
   private async Task OnGenerateKeyClickedAsync()
   {
-    var rsa = RSA.Create(_selectedKeySize);
-    var rsaEncryption = new RSAEncryption(rsa, _selectedPadding);
+    var rsa = RSA.Create(_selectedRSAKeySize);
+    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
 
     if (_cbUseMultithreading.Checked)
     {
@@ -144,36 +161,36 @@ public partial class RSAForm : Form
     if (openDialog.ShowDialog() == DialogResult.OK)
     {
       _importedKeyFilePath = openDialog.FileName;
-      _txtImportedKeyName.Text = Path.GetFileName(_importedKeyFilePath);
+      _txtImportedRSAKeyName.Text = Path.GetFileName(_importedKeyFilePath);
     }
   }
 
   private async Task OnEncryptClickedAsync()
   {
-    if (!AreInputsValid())
+    if (!AreInputsForRSAValid())
     {
       MessageNotifier.ShowError(
         "Data or file path and imported key name cannot be empty.");
       return;
     }
 
-    ToggleButton(_btnEncrypt);
+    ToggleButton(_btnRSAEncrypt);
     await PerformWithProgress(PerformEncryptionAsync);
-    ToggleButton(_btnEncrypt);
+    ToggleButton(_btnRSAEncrypt);
   }
 
   private async Task OnDecryptClickedAsync()
   {
-    if (!AreInputsValid())
+    if (!AreInputsForRSAValid())
     {
       MessageNotifier.ShowError(
         "Data or file path and imported key name cannot be empty.");
       return;
     }
 
-    ToggleButton(_btnDecrypt);
+    ToggleButton(_btnRSADecrypt);
     await PerformWithProgress(PerformDecryptionAsync);
-    ToggleButton(_btnDecrypt);
+    ToggleButton(_btnRSADecrypt);
   }
 
   private async Task PerformWithProgress(Func<Task> runCryptographicOperation)
@@ -213,7 +230,7 @@ public partial class RSAForm : Form
   private Task PerformEncryptionAsync()
   {
     var publicKeyPem = _keyStorage.Read(_importedKeyFilePath);
-    var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedPadding);
+    var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
       ? Task.Run(() => EncryptData(rsaEncryption, publicKeyPem))
@@ -223,7 +240,7 @@ public partial class RSAForm : Form
   private Task PerformDecryptionAsync()
   {
     var privateKeyPem = _keyStorage.Read(_importedKeyFilePath);
-    var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedPadding);
+    var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
       ? Task.Run(() => DecryptData(rsaEncryption, privateKeyPem))
@@ -286,9 +303,9 @@ public partial class RSAForm : Form
       $"{Path.GetFileNameWithoutExtension(inputPath)}-decrypted{Path.GetExtension(inputPath)}");
   }
 
-  private bool AreInputsValid()
+  private bool AreInputsForRSAValid()
     => !string.IsNullOrEmpty(_txtDataOrFilePath.Text) &&
-    !string.IsNullOrEmpty(_txtImportedKeyName.Text);
+    !string.IsNullOrEmpty(_txtImportedRSAKeyName.Text);
 
   private void ToggleProgress(bool isProcessing)
   {
