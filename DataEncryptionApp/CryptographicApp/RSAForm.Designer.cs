@@ -318,7 +318,7 @@
       txtImportedAESKeyName.BorderStyle = BorderStyle.FixedSingle;
       txtImportedAESKeyName.Enabled = false;
       txtImportedAESKeyName.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-      txtImportedAESKeyName.Location = new Point(488, 196);
+      txtImportedAESKeyName.Location = new Point(488, 193);
       txtImportedAESKeyName.Name = "txtImportedAESKeyName";
       txtImportedAESKeyName.Size = new Size(157, 29);
       txtImportedAESKeyName.TabIndex = 35;

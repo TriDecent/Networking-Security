@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using CryptographicApp.Models;
 using CryptographicApp.Utils;
 
 namespace CryptographicApp.CryptographicCores.KeysRepository;
@@ -15,7 +16,7 @@ public partial class SecureKeyStorage
   public string ReadSingleRSAKey(string filePath)
     => File.ReadAllText(filePath);
 
-  public void SaveKeyPair(RSAKeyPair keyPair)
+  public void SaveKeyPair(RSAKey keyPair)
   {
     var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, "KeyPairs");
     Directory.CreateDirectory(directory);

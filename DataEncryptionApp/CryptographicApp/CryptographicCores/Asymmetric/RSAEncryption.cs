@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using CryptographicApp.Enums;
 
-namespace CryptographicApp.CryptographicCores;
+namespace CryptographicApp.CryptographicCores.Asymmetric;
 
 public interface IRSAEncryption
 {

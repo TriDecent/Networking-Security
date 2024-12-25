@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
-using CryptographicApp.CryptographicCores;
+using CryptographicApp.CryptographicCores.Asymmetric;
 using CryptographicApp.CryptographicCores.KeysRepository;
 using CryptographicApp.Enums;
 using CryptographicApp.Utils;
@@ -121,7 +121,7 @@ public partial class RSAForm : Form
   private void OnSelectedAESKeySizeChanged()
     => _selectedAESKeySize = (int)_cbAESKeySize.SelectedItem!;
 
-  private void OnSelectedHashAlgorithmChanged() 
+  private void OnSelectedHashAlgorithmChanged()
     => _selectedHashAlgorithm = (Enums.HashAlgorithm)_cbHashAlgorithm.SelectedItem!;
 
   private void OnEncryptOrDecryptStart()
@@ -164,7 +164,7 @@ public partial class RSAForm : Form
     void GenerateAndSaveKeys()
     {
       var (publicKey, privateKey) = rsaEncryption.GenerateKey();
-      _keyStorage.SaveKeyPair(new KeyPair(publicKey, privateKey));
+      _keyStorage.SaveKeyPair(new RSAKey(publicKey, privateKey));
     }
   }
 
@@ -246,7 +246,7 @@ public partial class RSAForm : Form
 
   private Task PerformEncryptionAsync()
   {
-    var publicKeyPem = _keyStorage.Read(_importedKeyFilePath);
+    var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedKeyFilePath);
     var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
@@ -256,7 +256,7 @@ public partial class RSAForm : Form
 
   private Task PerformDecryptionAsync()
   {
-    var privateKeyPem = _keyStorage.Read(_importedKeyFilePath);
+    var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedKeyFilePath);
     var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
