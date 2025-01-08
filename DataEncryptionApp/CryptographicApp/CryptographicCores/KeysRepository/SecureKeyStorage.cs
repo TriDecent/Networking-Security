@@ -6,7 +6,7 @@ namespace CryptographicApp.CryptographicCores.KeysRepository;
 
 public partial class SecureKeyStorage
 {
-  private const string hyphen = "-----";
+  private const string HYPHEN = "-----";
 
   [GeneratedRegex(@"public_key(\d+)\.pem")]
   private static partial Regex RSAKeyNumberPattern();
@@ -14,15 +14,15 @@ public partial class SecureKeyStorage
   [GeneratedRegex(@"aes_key(\d+)\.key")]
   private static partial Regex AESKeyNumberPattern();
 
-  public const string RSAKeysFolder = "RSAKeys";
-  public const string AESKeysFolder = "AESKeys";
+  public const string RSA_KEYS_FOLDER = "RSAKeys";
+  public const string AES_KEYS_FOLDER = "AESKeys";
 
   public string ReadSingleRSAKey(string filePath)
   => File.ReadAllText(filePath);
 
   public void SaveKeyPair(RSAKey keyPair)
   {
-    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, RSAKeysFolder);
+    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, RSA_KEYS_FOLDER);
     Directory.CreateDirectory(directory);
 
     var newNumber = Directory.GetFiles(directory, "public_key*.pem")
@@ -38,7 +38,7 @@ public partial class SecureKeyStorage
 
   public void SaveAESKey(AESKey aesKey)
   {
-    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, AESKeysFolder);
+    var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, AES_KEYS_FOLDER);
     Directory.CreateDirectory(directory);
 
     var newNumber = Directory.GetFiles(directory, "aes_key*.key")
@@ -49,12 +49,12 @@ public partial class SecureKeyStorage
       .Max() + 1;
 
     string content = $"""
-      {hyphen}BEGIN AES KEY{hyphen}
+      {HYPHEN}BEGIN AES KEY{HYPHEN}
       {aesKey.Key}
-      {hyphen}END AES KEY{hyphen}
-      {hyphen}BEGIN AES IV{hyphen}
+      {HYPHEN}END AES KEY{HYPHEN}
+      {HYPHEN}BEGIN AES IV{HYPHEN}
       {aesKey.IV}
-      {hyphen}END AES IV{hyphen}
+      {HYPHEN}END AES IV{HYPHEN}
       """;
 
     Write(Path.Combine(directory, $"aes_key{newNumber}.key"), content);
@@ -64,11 +64,11 @@ public partial class SecureKeyStorage
   {
     var content = File.ReadAllText(filePath);
     var key = content
-      .Between($"{hyphen}BEGIN AES KEY{hyphen}", $"{hyphen}END AES KEY{hyphen}")
+      .Between($"{HYPHEN}BEGIN AES KEY{HYPHEN}", $"{HYPHEN}END AES KEY{HYPHEN}")
       .Trim();
 
     var iv = content
-      .Between($"{hyphen}BEGIN AES IV{hyphen}", $"{hyphen}END AES IV{hyphen}")
+      .Between($"{HYPHEN}BEGIN AES IV{HYPHEN}", $"{HYPHEN}END AES IV{HYPHEN}")
       .Trim();
 
     return new AESKey(key, iv);

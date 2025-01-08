@@ -11,8 +11,8 @@ namespace CryptographicApp;
 
 public partial class RSAForm : Form
 {
-  private const string EncryptedOutputDirectory = "EncryptedFiles";
-  private const string DecryptionOutputDirectory = "DecryptedFiles";
+  private const string ENCRYPTED_OUTPUT_DIRECTORY = "EncryptedFiles";
+  private const string DECRYPTION_OUTPUT_DIRECTORY = "DecryptedFiles";
   private readonly Button _btnBrowse, _btnGenerateRSAKey, _btnImportRSAKey;
   private readonly Button _btnRSAEncrypt, _btnRSADecrypt;
   private readonly ComboBox _cbDataFormat, _cbRSAPadding, _cbRSAKeySize;
@@ -183,21 +183,21 @@ public partial class RSAForm : Form
       createEncryption: () => new AESEncryption(aes, _selectedAESPadding),
       generateKey: encryption => encryption.GenerateKey(),
       saveKey: _keyStorage.SaveAESKey,
-      keysFolder: SecureKeyStorage.AESKeysFolder
+      keysFolder: SecureKeyStorage.AES_KEYS_FOLDER
     );
   }
 
   private async Task OnGenerateRSAKeyClickedAsync()
   {
     await OnGenerateKeyClickedAsync(
-        createEncryption: () => new RSAEncryption(RSA.Create(_selectedRSAKeySize), _selectedRSAPadding),
-        generateKey: encryption =>
-        {
-          var (publicKey, privateKey) = encryption.GenerateKey();
-          return new RSAKey(publicKey, privateKey);
-        },
-        saveKey: _keyStorage.SaveKeyPair,
-        keysFolder: SecureKeyStorage.RSAKeysFolder
+      createEncryption: () => new RSAEncryption(RSA.Create(_selectedRSAKeySize), _selectedRSAPadding),
+      generateKey: encryption =>
+      {
+        var (publicKey, privateKey) = encryption.GenerateKey();
+        return new RSAKey(publicKey, privateKey);
+      },
+      saveKey: _keyStorage.SaveKeyPair,
+      keysFolder: SecureKeyStorage.RSA_KEYS_FOLDER
     );
   }
 
@@ -342,7 +342,7 @@ public partial class RSAForm : Form
   private static string GetEncryptedFilePath(string inputPath)
   {
     var encryptedDirectory = Path.Combine(
-      Path.GetDirectoryName(Application.ExecutablePath)!, EncryptedOutputDirectory);
+      Path.GetDirectoryName(Application.ExecutablePath)!, ENCRYPTED_OUTPUT_DIRECTORY);
     Directory.CreateDirectory(encryptedDirectory);
     return Path.Combine(encryptedDirectory,
       $"{Path.GetFileNameWithoutExtension(inputPath)}-encrypted{Path.GetExtension(inputPath)}");
@@ -351,7 +351,7 @@ public partial class RSAForm : Form
   private static string GetDecryptedFilePath(string inputPath)
   {
     var decryptedDirectory = Path.Combine(
-      Path.GetDirectoryName(Application.ExecutablePath)!, DecryptionOutputDirectory);
+      Path.GetDirectoryName(Application.ExecutablePath)!, DECRYPTION_OUTPUT_DIRECTORY);
     Directory.CreateDirectory(decryptedDirectory);
     return Path.Combine(decryptedDirectory,
       $"{Path.GetFileNameWithoutExtension(inputPath)}-decrypted{Path.GetExtension(inputPath)}");
