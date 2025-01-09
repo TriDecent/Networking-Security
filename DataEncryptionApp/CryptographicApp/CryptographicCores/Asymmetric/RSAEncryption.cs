@@ -2,17 +2,9 @@ using System.Security.Cryptography;
 using System.Text;
 using CryptographicApp.Enums;
 using CryptographicApp.Models;
+using CryptographicApp.Utils;
 
 namespace CryptographicApp.CryptographicCores.Asymmetric;
-
-public interface IRSAEncryption
-{
-  RSAKey GenerateKey();
-  string Encrypt(string data, string publicKeyPem, DataFormat dataFormat);
-  string Decrypt(string encryptedData, string privateKeyPem, DataFormat dataFormat);
-  void EncryptFile(string inputFile, string outputFile, string publicKeyPem);
-  void DecryptFile(string inputFile, string outputFile, string privateKeyPem);
-}
 
 public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncryption
 {
@@ -46,19 +38,19 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
   private string EncryptFromText(string text, string publicKeyPem)
   {
     _rsa.ImportFromPem(publicKeyPem);
-    var bytes = Encoding.UTF8.GetBytes(text);
+    var bytes = text.StringToBytes();
     var encryptedBytes = _rsa.Encrypt(bytes, _padding);
 
-    return Convert.ToBase64String(encryptedBytes);
+    return encryptedBytes.ToBase64();
   }
 
   private string EncryptFromHex(string hex, string publicKeyPem)
   {
     _rsa.ImportFromPem(publicKeyPem);
-    var bytes = Convert.FromHexString(hex);
+    var bytes = hex.HexToBytes();
     var encryptedBytes = _rsa.Encrypt(bytes, _padding);
 
-    return Convert.ToHexString(encryptedBytes);
+    return encryptedBytes.ToHex();
   }
 
   public string Decrypt(string data, string privateKeyPem, DataFormat dataFormat)
@@ -72,9 +64,9 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
   private string DecryptFromText(string encryptedText, string privateKeyPem)
   {
     _rsa.ImportFromPem(privateKeyPem);
-    var bytes = Convert.FromBase64String(encryptedText);
+    var bytes = encryptedText.Base64ToBytes();
     var decryptedBytes = _rsa.Decrypt(bytes, _padding);
-    var text = Encoding.UTF8.GetString(decryptedBytes);
+    var text = BytesExtension.ToString(decryptedBytes);
 
     return text;
   }
@@ -82,9 +74,9 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
   private string DecryptFromHex(string encryptedHex, string privateKeyPem)
   {
     _rsa.ImportFromPem(privateKeyPem);
-    var bytes = Convert.FromHexString(encryptedHex);
+    var bytes = encryptedHex.HexToBytes();
     var decryptedBytes = _rsa.Decrypt(bytes, _padding);
-    var hex = Convert.ToHexString(decryptedBytes);
+    var hex = decryptedBytes.ToHex();
 
     return hex;
   }
