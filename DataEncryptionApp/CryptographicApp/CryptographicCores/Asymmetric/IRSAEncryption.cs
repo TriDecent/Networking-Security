@@ -5,6 +5,7 @@ namespace CryptographicApp.CryptographicCores.Asymmetric;
 
 public interface IRSAEncryption
 {
+  void SetKeySize(int keySize);
   RSAKey GenerateKey();
   string Encrypt(string data, string publicKeyPem, DataFormat dataFormat);
   string Decrypt(string encryptedData, string privateKeyPem, DataFormat dataFormat);

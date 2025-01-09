@@ -19,6 +19,8 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
   private readonly RSA _rsa = rsa;
   private readonly RSAEncryptionPadding _padding = padding;
 
+  public void SetKeySize(int keySize) => _rsa.KeySize = keySize;
+
   public RSAKey GenerateKey()
   {
     var publicKey = _rsa.ExportRSAPublicKeyPem();

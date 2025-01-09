@@ -103,6 +103,7 @@ public partial class RSAForm : Form
     _btnGenerateAESKey.Click += (s, e) => OnProcessStart();
 
     _btnGenerateAESKey.Click += async (s, e) => await OnGenerateAESKeyClickedAsync();
+    _btnImportAESKey.Click += (s, e) => OnImportAESKeyClicked();
   }
 
   private void OnSelectedDataFormatChanged()
@@ -177,11 +178,15 @@ public partial class RSAForm : Form
   private async Task OnGenerateAESKeyClickedAsync()
   {
     using var aes = Aes.Create();
-    aes.KeySize = _selectedAESKeySize;
 
     await OnGenerateKeyClickedAsync(
-      createEncryption: () => new AESEncryption(aes, _selectedAESPadding),
-      generateKey: encryption => encryption.GenerateKey(),
+      createEncryption: () => new AESEncryption(aes),
+      generateKey: encryption =>
+      {
+        encryption.SetKeySize(_selectedAESKeySize);
+        var aesKey = encryption.GenerateKey();
+        return aesKey;
+      },
       saveKey: _keyStorage.SaveAESKey,
       keysFolder: SecureKeyStorage.AES_KEYS_FOLDER
     );
@@ -189,10 +194,13 @@ public partial class RSAForm : Form
 
   private async Task OnGenerateRSAKeyClickedAsync()
   {
+    using var rsa = RSA.Create();
+
     await OnGenerateKeyClickedAsync(
-      createEncryption: () => new RSAEncryption(RSA.Create(_selectedRSAKeySize), _selectedRSAPadding),
+      createEncryption: () => new RSAEncryption(rsa, _selectedRSAPadding),
       generateKey: encryption =>
       {
+        encryption.SetKeySize(_selectedRSAKeySize);
         var (publicKey, privateKey) = encryption.GenerateKey();
         return new RSAKey(publicKey, privateKey);
       },
@@ -212,6 +220,20 @@ public partial class RSAForm : Form
     {
       _importedRSAKeyFilePath = openDialog.FileName;
       _txtImportedRSAKeyName.Text = Path.GetFileName(_importedRSAKeyFilePath);
+    }
+  }
+
+  private void OnImportAESKeyClicked()
+  {
+    using var openDialog = new OpenFileDialog
+    {
+      Filter = "Key files (*.key)|*.key|All files (*.*)|*.*"
+    };
+
+    if (openDialog.ShowDialog() == DialogResult.OK)
+    {
+      _importedAESKeyFilePath = openDialog.FileName;
+      _txtImportedAESKeyName.Text = Path.GetFileName(_importedAESKeyFilePath);
     }
   }
 
@@ -283,8 +305,9 @@ public partial class RSAForm : Form
 
   private Task PerformEncryptionAsync()
   {
+    using var rsa = RSA.Create();
     var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedRSAKeyFilePath);
-    var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedRSAPadding);
+    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
       ? Task.Run(() => EncryptData(rsaEncryption, publicKeyPem))
@@ -293,8 +316,9 @@ public partial class RSAForm : Form
 
   private Task PerformDecryptionAsync()
   {
+    using var rsa = RSA.Create();
     var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedRSAKeyFilePath);
-    var rsaEncryption = new RSAEncryption(RSA.Create(), _selectedRSAPadding);
+    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
       ? Task.Run(() => DecryptData(rsaEncryption, privateKeyPem))
