@@ -2,7 +2,7 @@
 
 namespace CryptographicApp.CryptographicCores.HashGenerators;
 
-internal interface IHashGenerator
+public interface IHashGenerator
 {
   string GenerateHash(string data, DataFormat dataFormat);
 }
