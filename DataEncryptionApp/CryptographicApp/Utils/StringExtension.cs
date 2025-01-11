@@ -16,6 +16,6 @@ public static class StringExtension
 
   public static byte[] HexToBytes(this string hex) => Convert.FromHexString(hex);
 
-  public static byte[] Base64ToBytes(this string base64String) 
+  public static byte[] Base64ToBytes(this string base64String)
     => Convert.FromBase64String(base64String);
 }

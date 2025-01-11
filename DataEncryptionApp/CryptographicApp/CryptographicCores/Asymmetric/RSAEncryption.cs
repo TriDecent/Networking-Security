@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using CryptographicApp.Enums;
 using CryptographicApp.Models;
 using CryptographicApp.Utils;
+using System.Security.Cryptography;
 
 namespace CryptographicApp.CryptographicCores.Asymmetric;
 
@@ -85,7 +85,7 @@ public class RSAEncryption(RSA rsa, RSAEncryptionPadding padding) : IRSAEncrypti
   public void EncryptFile(string inputFile, string outputFile, string publicKeyPem)
   {
     _rsa.ImportFromPem(publicKeyPem);
-    int maxChunkSize = _rsa.KeySize / 8 - _paddingOverhead[_padding];
+    int maxChunkSize = (_rsa.KeySize / 8) - _paddingOverhead[_padding];
 
     using var inputStream = File.OpenRead(inputFile);
     using var outputStream = File.Create(outputFile);

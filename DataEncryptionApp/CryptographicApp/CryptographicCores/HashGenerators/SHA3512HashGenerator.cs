@@ -1,4 +1,3 @@
-using System.Text;
 using CryptographicApp.Enums;
 using CryptographicApp.Utils;
 using SHA3.Net;

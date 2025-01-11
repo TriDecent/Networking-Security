@@ -1,7 +1,7 @@
-using System.Numerics;
-using AdvancedNumbersCalculator.Utilities.Encoders;
-using AdvancedNumbersCalculator.LogicalMath.PrimeNumbersCalculators;
 using AdvancedNumbersCalculator.LogicalMath.ModularArithmeticCalculators;
+using AdvancedNumbersCalculator.LogicalMath.PrimeNumbersCalculators;
+using AdvancedNumbersCalculator.Utilities.Encoders;
+using System.Numerics;
 
 namespace DataEncryptionApp.DataEncryption.AsymmetricCipher;
 

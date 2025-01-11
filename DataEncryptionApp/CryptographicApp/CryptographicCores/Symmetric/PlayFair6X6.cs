@@ -54,7 +54,7 @@ public class PlayFair6x6
       for (int j = 0; j < matrix.GetLength(1); j++)
       {
 
-        Label lbl = new Label
+        Label lbl = new()
         {
           Text = matrix[i, j].ToString(),
           TextAlign = ContentAlignment.MiddleCenter,
@@ -100,11 +100,7 @@ public class PlayFair6x6
   {
     try
     {
-      if (alphabetMap6x6[tmp] == false)
-      {
-        return false;
-      }
-      return true;
+      return alphabetMap6x6[tmp] != false;
     }
     catch
     {
@@ -161,7 +157,7 @@ public class PlayFair6x6
       {
         char character = matrixAlphabet[i, j];
 
-        Tuple<char, Tuple<int, int>> tmp = new Tuple<char, Tuple<int, int>>(character, new Tuple<int, int>(i, j));
+        Tuple<char, Tuple<int, int>> tmp = new(character, new Tuple<int, int>(i, j));
         _matrixKey[i, j] = tmp;
       }
     }
@@ -184,7 +180,7 @@ public class PlayFair6x6
     var sb = new StringBuilder();
     foreach (char c in key)
     {
-      if (c >= 'A' && c <= 'Z' || char.IsDigit(c))
+      if ((c >= 'A' && c <= 'Z') || char.IsDigit(c))
       {
         sb.Append(c);
       }
@@ -198,10 +194,10 @@ public class PlayFair6x6
     plaintext = plaintext.Trim();
     plaintext = plaintext.ToUpper();
 
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new();
     foreach (char c in plaintext)
     {
-      if (c >= 'A' && c <= 'Z' || char.IsDigit(c))
+      if ((c >= 'A' && c <= 'Z') || char.IsDigit(c))
       {
         sb.Append(c);
       }
@@ -240,7 +236,7 @@ public class PlayFair6x6
     var sb = new StringBuilder();
     foreach (char c in cipherText)
     {
-      if (c >= 'A' && c <= 'Z' || char.IsDigit(c))
+      if ((c >= 'A' && c <= 'Z') || char.IsDigit(c))
       {
         sb.Append(c);
       }
@@ -430,7 +426,7 @@ public class PlayFair6x6
   private static char? ReturnAlphaByColumnRow(int row, int column, Tuple<char, Tuple<int, int>>[,] matrix)
   {
     char? resultChar = null;
-    Tuple<int, int> target = new Tuple<int, int>(row, column);
+    Tuple<int, int> target = new(row, column);
     for (int i = 0; i < matrix.GetLength(0); i++)
     {
       for (int j = 0; j < matrix.GetLength(1); j++)
@@ -460,14 +456,7 @@ public class PlayFair6x6
         }
       }
     }
-    if (result != null)
-    {
-      return result;
-    }
-    else
-    {
-      return null;
-    }
+    return result ?? null;
   }
 
   public string Encrypt(string plainText)

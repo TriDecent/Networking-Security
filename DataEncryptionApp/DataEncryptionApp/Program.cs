@@ -57,8 +57,8 @@ try
   if (choice == "5")
   {
     var rsaDataEncryptionApp = new RSADataEncryptionApplication(
-      dataEncryptionApp, 
-      new RSAEncryption(), 
+      dataEncryptionApp,
+      new RSAEncryption(),
       uiHandler
     );
 

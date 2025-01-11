@@ -15,7 +15,7 @@ public class AffineEncryption : ICrackingDataEncryption
       if (char.IsLetter(c))
       {
         int x = c - 'A';
-        int encryptedValue = (a * x + b) % 26;
+        int encryptedValue = ((a * x) + b) % 26;
         char encryptedChar = (char)(encryptedValue + 'A');
         cipherText += encryptedChar;
       }
@@ -31,8 +31,8 @@ public class AffineEncryption : ICrackingDataEncryption
   public string Decrypt(string cipherText, string key)
   {
     var keys = ParseKey(key);
-    int a = keys.key1; 
-    int b = keys.key2; 
+    int a = keys.key1;
+    int b = keys.key2;
 
     // Find modular inverse of a
     int aInverse = ModularInverse(a, 26);
@@ -72,12 +72,7 @@ public class AffineEncryption : ICrackingDataEncryption
     int key1 = int.Parse(keys[0]);
     int key2 = int.Parse(keys[1]);
 
-    if (!IsCoprime(key1, 26))
-    {
-      throw new ArgumentException("'a' must be coprime with 26.");
-    }
-
-    return (key1, key2);
+    return !IsCoprime(key1, 26) ? throw new ArgumentException("'a' must be coprime with 26.") : (key1, key2);
   }
 
   private static int ModularInverse(int a, int m)

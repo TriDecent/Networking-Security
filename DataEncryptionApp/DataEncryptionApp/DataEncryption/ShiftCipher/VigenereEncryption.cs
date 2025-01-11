@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace DataEncryptionApp.DataEncryption.ShiftCipher
 {
@@ -11,8 +9,8 @@ namespace DataEncryptionApp.DataEncryption.ShiftCipher
     public override string Encrypt(string plainText, string key)
     {
       StringBuilder cipherText = new();
-      key = key.ToUpper();  
-      int keyIndex = 0;     
+      key = key.ToUpper();
+      int keyIndex = 0;
 
       for (int i = 0; i < plainText.Length; i++)
       {
@@ -21,16 +19,16 @@ namespace DataEncryptionApp.DataEncryption.ShiftCipher
         if (char.IsLetter(plainChar))
         {
           char offset = char.IsUpper(plainChar) ? 'A' : 'a';
-          char keyChar = key[keyIndex % key.Length]; 
-          keyIndex++; 
+          char keyChar = key[keyIndex % key.Length];
+          keyIndex++;
 
-          
+
           int cipherChar = (plainChar - offset + (keyChar - 'A')) % AlphabetSize;
           cipherText.Append((char)(cipherChar + offset));
         }
         else
         {
-          cipherText.Append(plainChar); 
+          cipherText.Append(plainChar);
         }
       }
 
@@ -40,8 +38,8 @@ namespace DataEncryptionApp.DataEncryption.ShiftCipher
     public override string Decrypt(string cipherText, string key)
     {
       StringBuilder plainText = new();
-      key = key.ToUpper();  
-      int keyIndex = 0;     
+      key = key.ToUpper();
+      int keyIndex = 0;
 
       for (int i = 0; i < cipherText.Length; i++)
       {
@@ -50,16 +48,16 @@ namespace DataEncryptionApp.DataEncryption.ShiftCipher
         if (char.IsLetter(cipherChar))
         {
           char offset = char.IsUpper(cipherChar) ? 'A' : 'a';
-          char keyChar = key[keyIndex % key.Length]; 
-          keyIndex++; 
+          char keyChar = key[keyIndex % key.Length];
+          keyIndex++;
 
-          
+
           int plainChar = (cipherChar - offset - (keyChar - 'A') + AlphabetSize) % AlphabetSize;
           plainText.Append((char)(plainChar + offset));
         }
         else
         {
-          plainText.Append(cipherChar); 
+          plainText.Append(cipherChar);
         }
       }
 
@@ -70,7 +68,5 @@ namespace DataEncryptionApp.DataEncryption.ShiftCipher
     {
       throw new NotImplementedException();
     }
-
-   
   }
 }

@@ -44,7 +44,7 @@ public class PlayFair5x5
       for (int j = 0; j < matrix.GetLength(1); j++)
       {
 
-        Label lbl = new Label
+        Label lbl = new()
         {
           Text = matrix[i, j].ToString(),
           TextAlign = ContentAlignment.MiddleCenter,
@@ -92,11 +92,7 @@ public class PlayFair5x5
   {
     try
     {
-      if (_alphabetMap5x5[tmp] == false)
-      {
-        return false;
-      }
-      return true;
+      return _alphabetMap5x5[tmp] != false;
     }
     catch
     {
@@ -152,7 +148,7 @@ public class PlayFair5x5
       {
         char character = matrixAlphabet[i, j];
 
-        Tuple<char, Tuple<int, int>> tmp = new Tuple<char, Tuple<int, int>>(character, new Tuple<int, int>(i, j));
+        Tuple<char, Tuple<int, int>> tmp = new(character, new Tuple<int, int>(i, j));
         _matrixKey[i, j] = tmp;
 
       }
@@ -426,7 +422,7 @@ public class PlayFair5x5
   private char? ReturnAlphaByColumnRow(int row, int column, Tuple<char, Tuple<int, int>>[,] matrix)
   {
     char? resultChar = null;
-    Tuple<int, int> target = new Tuple<int, int>(row, column);
+    Tuple<int, int> target = new(row, column);
     for (int i = 0; i < matrix.GetLength(0); i++)
     {
       for (int j = 0; j < matrix.GetLength(1); j++)
@@ -456,14 +452,7 @@ public class PlayFair5x5
         }
       }
     }
-    if (result != null)
-    {
-      return result;
-    }
-    else
-    {
-      return null;
-    }
+    return result ?? null;
   }
 
   public string Encrypt(string plainText)

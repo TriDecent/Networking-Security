@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using CryptographicApp.Enums;
 using CryptographicApp.Utils;
+using System.Security.Cryptography;
 
 namespace CryptographicApp.CryptographicCores.HashGenerators;
 

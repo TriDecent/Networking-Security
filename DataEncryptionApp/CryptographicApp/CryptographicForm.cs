@@ -8,7 +8,7 @@ public partial class CryptographicForm : Form
   {
     InitializeComponent();
 
-    IsMdiContainer = true; 
+    IsMdiContainer = true;
 
     var toolStrip = new ToolStrip();
 
@@ -20,7 +20,7 @@ public partial class CryptographicForm : Form
     OpenForm(new RSAForm());
 
     btnRSA.Click += (s, e) => OpenForm(new RSAForm());
-    btnPlayFair.Click += (s,e) => OpenForm(new PlayFairForm());
+    btnPlayFair.Click += (s, e) => OpenForm(new PlayFairForm());
 
     Controls.Add(toolStrip);
   }

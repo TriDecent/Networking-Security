@@ -40,8 +40,6 @@ public class FileIntegrityVerifier(
 
     File.Delete(tempFilePath);
 
-    if (originalHash == computedHash) return true;
-
-    return false;
+    return originalHash == computedHash;
   }
 }

@@ -1,9 +1,9 @@
-using System.Buffers.Binary;
 using CryptographicApp.CryptographicCores.Asymmetric;
 using CryptographicApp.CryptographicCores.HashGenerators;
 using CryptographicApp.Enums;
 using CryptographicApp.Models;
 using CryptographicApp.Utils;
+using System.Buffers.Binary;
 
 namespace CryptographicApp.CryptographicCores.MetadataHeaderExtractor;
 
@@ -75,7 +75,7 @@ public class HeaderMetadataHandler(
 
   public void SkipHeader(FileStream inputFileStream, HybridMetadataHeader headerMetadata)
   {
-    var totalHeaderSize = LENGTH_PREFIX_SIZE * 3
+    var totalHeaderSize = (LENGTH_PREFIX_SIZE * 3)
       + headerMetadata.AESKeyLength
       + headerMetadata.AesIVLength
       + headerMetadata.HashLength;
