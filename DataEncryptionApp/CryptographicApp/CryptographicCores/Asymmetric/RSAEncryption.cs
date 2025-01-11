@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using CryptographicApp.Enums;
 using CryptographicApp.Models;
 using CryptographicApp.Utils;
