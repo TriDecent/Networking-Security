@@ -30,11 +30,12 @@ public class HeaderMetadataHandler(
 
     var encryptedAESKeyBytes = encryptedAESKey.Base64ToBytes();
     var encryptedAesIVBytes = encryptedAesIV.Base64ToBytes();
+    var encryptedHashBytes = encryptedHash.HexToBytes();
 
     return new HybridMetadataHeader(
       AESKeyLength: encryptedAESKeyBytes.Length,
       AesIVLength: encryptedAesIVBytes.Length,
-      HashLength: encryptedHash.Length,
+      HashLength: encryptedHashBytes.Length,
       EncryptedAesKey: new AESKey(encryptedAESKey, encryptedAesIV),
       EncryptedHash: encryptedHash
     );
@@ -85,7 +86,7 @@ public class HeaderMetadataHandler(
   public async Task WriteMetadataHeaderTo(
     Stream targetStream, HybridMetadataHeader metadataHeader)
   {
-    var buffer = new byte[4];
+    var buffer = new byte[LENGTH_PREFIX_SIZE];
 
     BinaryPrimitives.WriteInt32BigEndian(buffer, metadataHeader.AESKeyLength);
     await targetStream.WriteAsync(buffer.AsMemory());

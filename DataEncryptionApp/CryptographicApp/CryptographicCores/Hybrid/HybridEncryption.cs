@@ -38,7 +38,7 @@ public class HybridEncryption(
       FileMode.Open,
       FileAccess.ReadWrite,
       FileShare.ReadWrite | FileShare.Delete);
-      
+
     await tempStream.CopyToAsync(outputStream);
 
     File.Delete(tempFilePath);
