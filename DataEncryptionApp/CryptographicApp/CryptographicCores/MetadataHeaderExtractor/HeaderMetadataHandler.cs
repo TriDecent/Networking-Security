@@ -25,9 +25,8 @@ public class HeaderMetadataHandler(
     var encryptedAesIV = _rsa
       .Encrypt(aesKey.IV, rsaKey.PublicKey, DataFormat.Text);
 
-    var encryptedHashBytes = _rsa
-      .Encrypt(inputFileHash, rsaKey.PublicKey, DataFormat.Text)
-      .HexToBytes();
+    var encryptedHash = _rsa
+      .Encrypt(inputFileHash, rsaKey.PublicKey, DataFormat.Hex);
 
     var encryptedAESKeyBytes = encryptedAESKey.Base64ToBytes();
     var encryptedAesIVBytes = encryptedAesIV.Base64ToBytes();
@@ -35,9 +34,9 @@ public class HeaderMetadataHandler(
     return new HybridMetadataHeader(
       AESKeyLength: encryptedAESKeyBytes.Length,
       AesIVLength: encryptedAesIVBytes.Length,
-      HashLength: encryptedHashBytes.Length,
+      HashLength: encryptedHash.Length,
       EncryptedAesKey: new AESKey(encryptedAESKey, encryptedAesIV),
-      EncryptedHash: encryptedHashBytes.ToHex()
+      EncryptedHash: encryptedHash
     );
   }
 
