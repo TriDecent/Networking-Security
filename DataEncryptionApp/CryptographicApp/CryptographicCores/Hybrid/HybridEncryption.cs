@@ -33,7 +33,12 @@ public class HybridEncryption(
 
     await _aes.EncryptFileAsync(inputFilePath, tempFilePath, aesKey);
 
-    using var tempStream = File.OpenRead(tempFilePath);
+    using var tempStream = new FileStream(
+      tempFilePath,
+      FileMode.Open,
+      FileAccess.ReadWrite,
+      FileShare.ReadWrite | FileShare.Delete);
+      
     await tempStream.CopyToAsync(outputStream);
 
     File.Delete(tempFilePath);
