@@ -1,4 +1,6 @@
 using CryptographicApp.CryptographicCores.Asymmetric;
+using CryptographicApp.CryptographicCores.HashGenerators;
+using CryptographicApp.CryptographicCores.Hybrid;
 using CryptographicApp.CryptographicCores.KeysRepository;
 using CryptographicApp.CryptographicCores.Symmetric;
 using CryptographicApp.Enums;
@@ -13,10 +15,12 @@ public partial class RSAForm : Form
 {
   private const string ENCRYPTED_OUTPUT_DIRECTORY = "EncryptedFiles";
   private const string DECRYPTION_OUTPUT_DIRECTORY = "DecryptedFiles";
-  private readonly Button _btnBrowse, _btnGenerateRSAKey, _btnImportRSAKey;
+  private readonly Button _btnBrowse, _btnGenerateRSAKey;
+  private readonly Button _btnImportPrivateKey, _btnImportPublicKey;
   private readonly Button _btnRSAEncrypt, _btnRSADecrypt;
   private readonly ComboBox _cbDataFormat, _cbRSAPadding, _cbRSAKeySize;
-  private readonly TextBox _txtDataOrFilePath, _txtResult, _txtImportedRSAKeyName;
+  private readonly TextBox _txtDataOrFilePath, _txtResult;
+  private readonly TextBox _txtImportedPublicKeyName, _txtImportedPrivateKeyName;
   private readonly Button _btnHybridEncrypt, _btnHybridDecrypt;
   private readonly Button _btnGenerateAESKey, _btnImportAESKey;
   private readonly TextBox _txtImportedAESKeyName;
@@ -28,7 +32,8 @@ public partial class RSAForm : Form
 
   private readonly SecureKeyStorage _keyStorage = new();
 
-  private string _importedRSAKeyFilePath = "";
+  private string _importedPublicKeyFilePath = "";
+  private string _importedPrivateKeyFilePath = "";
   private string _importedAESKeyFilePath = "";
 
   private DataFormat _selectedDataFormat = DataFormat.Text;
@@ -45,7 +50,8 @@ public partial class RSAForm : Form
 
     _btnBrowse = btnBrowse;
     _btnGenerateRSAKey = btnGenerateRSAKey;
-    _btnImportRSAKey = btnImportRSAKey;
+    _btnImportPublicKey = btnImportPublicKey;
+    _btnImportPrivateKey = btnImportPrivateKey;
     _btnRSAEncrypt = btnEncrypt;
     _btnRSADecrypt = btnDecrypt;
     _cbDataFormat = cbDataFormat;
@@ -53,7 +59,8 @@ public partial class RSAForm : Form
     _cbRSAKeySize = cbRSAKeySize;
     _txtDataOrFilePath = txtDataOrFilePath;
     _txtResult = txtResult;
-    _txtImportedRSAKeyName = txtImportedRSAKeyName;
+    _txtImportedPublicKeyName = txtImportedPublicKeyName;
+    _txtImportedPrivateKeyName = txtImportedPrivateKeyName;
     _cbUseMultithreading = cbUseMultithreading;
     _btnHybridEncrypt = btnHybridEncrypt;
     _btnHybridDecrypt = btnHybridDecrypt;
@@ -91,7 +98,8 @@ public partial class RSAForm : Form
     _btnRSAEncrypt.Click += (s, e) => OnProcessStart();
 
     _btnGenerateRSAKey.Click += async (s, e) => await OnGenerateRSAKeyClickedAsync();
-    _btnImportRSAKey.Click += (s, e) => OnImportRSAKeyClicked();
+    _btnImportPublicKey.Click += (s, e) => OnImportPublicKeyClicked();
+    _btnImportPrivateKey.Click += (s, e) => OnImportPrivateKeyClicked();
     _btnRSAEncrypt.Click += async (s, e) => await OnEncryptClickedAsync();
     _btnRSADecrypt.Click += async (s, e) => await OnDecryptClickedAsync();
     _btnBrowse.Click += (s, e) => OnBrowseClicked();
@@ -209,7 +217,7 @@ public partial class RSAForm : Form
     );
   }
 
-  private void OnImportRSAKeyClicked()
+  private void OnImportPublicKeyClicked()
   {
     using var openDialog = new OpenFileDialog
     {
@@ -218,8 +226,22 @@ public partial class RSAForm : Form
 
     if (openDialog.ShowDialog() == DialogResult.OK)
     {
-      _importedRSAKeyFilePath = openDialog.FileName;
-      _txtImportedRSAKeyName.Text = Path.GetFileName(_importedRSAKeyFilePath);
+      _importedPublicKeyFilePath = openDialog.FileName;
+      _txtImportedPublicKeyName.Text = Path.GetFileName(_importedPublicKeyFilePath);
+    }
+  }
+
+  private void OnImportPrivateKeyClicked()
+  {
+    using var openDialog = new OpenFileDialog
+    {
+      Filter = "PEM files (*.pem)|*.pem|All files (*.*)|*.*"
+    };
+
+    if (openDialog.ShowDialog() == DialogResult.OK)
+    {
+      _importedPrivateKeyFilePath = openDialog.FileName;
+      _txtImportedPrivateKeyName.Text = Path.GetFileName(_importedPrivateKeyFilePath);
     }
   }
 
@@ -242,12 +264,13 @@ public partial class RSAForm : Form
     if (!AreInputsForRSAValid())
     {
       MessageNotifier.ShowError(
-        "Data or file path and imported key name cannot be empty.");
+        "Data or file path and imported key cannot be empty.");
       return;
     }
 
+    using var rsa = RSA.Create();
     ToggleButton(_btnRSAEncrypt);
-    await PerformWithProgress(PerformEncryptionAsync);
+    await PerformWithProgress(() => PerformRSAEncryptionAsync(rsa));
     ToggleButton(_btnRSAEncrypt);
   }
 
@@ -256,12 +279,13 @@ public partial class RSAForm : Form
     if (!AreInputsForRSAValid())
     {
       MessageNotifier.ShowError(
-        "Data or file path and imported key name cannot be empty.");
+        "Data or file path and imported key cannot be empty.");
       return;
     }
 
+    using var rsa = RSA.Create();
     ToggleButton(_btnRSADecrypt);
-    await PerformWithProgress(PerformDecryptionAsync);
+    await PerformWithProgress(() => PerformRSADecryptionAsync(rsa));
     ToggleButton(_btnRSADecrypt);
   }
 
@@ -277,15 +301,16 @@ public partial class RSAForm : Form
 
       if (selectedDataFormatCache != DataFormat.File) return;
 
-      if (runCryptographicOperation.Method.Name == nameof(PerformEncryptionAsync))
+      if (runCryptographicOperation.Method.Name.Contains(
+        "Encryption", StringComparison.OrdinalIgnoreCase))
       {
         MessageNotifier.ShowSuccess(
-          "Your encrypted files has been saved to EncryptedFiles folder");
+          $"Your encrypted files has been saved to {ENCRYPTED_OUTPUT_DIRECTORY} folder");
         return;
       }
 
       MessageNotifier.ShowSuccess(
-        "Your decrypted files has been saved to DecryptedFiles folder");
+        $"Your decrypted files has been saved to {DECRYPTION_OUTPUT_DIRECTORY} folder");
     }
     catch (CryptographicException ex)
     {
@@ -314,10 +339,9 @@ public partial class RSAForm : Form
       : Task.CompletedTask.ContinueWith(_ => EncryptData(rsaEncryption, publicKeyPem));
   }
 
-  private Task PerformDecryptionAsync()
+  private Task PerformRSADecryptionAsync(RSA rsa)
   {
-    using var rsa = RSA.Create();
-    var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedRSAKeyFilePath);
+    var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
     var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
@@ -383,7 +407,12 @@ public partial class RSAForm : Form
 
   private bool AreInputsForRSAValid()
     => !string.IsNullOrEmpty(_txtDataOrFilePath.Text) &&
-    !string.IsNullOrEmpty(_txtImportedRSAKeyName.Text);
+    !string.IsNullOrEmpty(_txtImportedPublicKeyName.Text) &&
+    !string.IsNullOrEmpty(_txtImportedPrivateKeyName.Text);
+
+  private bool AreInputsForHybridValid()
+    => AreInputsForRSAValid() &&
+    !string.IsNullOrEmpty(_txtImportedAESKeyName.Text);
 
   private void ToggleProgress(bool isProcessing)
   {

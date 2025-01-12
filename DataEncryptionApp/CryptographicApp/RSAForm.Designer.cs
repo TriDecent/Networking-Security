@@ -34,7 +34,7 @@
       txtDataOrFilePath = new TextBox();
       lblDataOrFilePath = new Label();
       lblDataFormat = new Label();
-      btnImportRSAKey = new Button();
+      btnImportPublicKey = new Button();
       btnGenerateRSAKey = new Button();
       btnBrowse = new Button();
       progressBar = new ProgressBar();
@@ -45,7 +45,7 @@
       btnDecrypt = new Button();
       cbRSAPadding = new ComboBox();
       lblRSAPadding = new Label();
-      txtImportedRSAKeyName = new TextBox();
+      txtImportedPublicKeyName = new TextBox();
       lblRSAKeySize = new Label();
       cbRSAKeySize = new ComboBox();
       timer = new System.Windows.Forms.Timer(components);
@@ -61,6 +61,10 @@
       cbAESPadding = new ComboBox();
       lblHashAlgorithm = new Label();
       cbHashAlgorithm = new ComboBox();
+      btnImportPrivateKey = new Button();
+      label1 = new Label();
+      txtImportedPrivateKeyName = new TextBox();
+      label2 = new Label();
       SuspendLayout();
       // 
       // cbDataFormat
@@ -103,15 +107,15 @@
       lblDataFormat.TabIndex = 9;
       lblDataFormat.Text = "Data Format";
       // 
-      // btnImportRSAKey
+      // btnImportPublicKey
       // 
-      btnImportRSAKey.Font = new Font("Segoe UI", 12F);
-      btnImportRSAKey.Location = new Point(387, 89);
-      btnImportRSAKey.Name = "btnImportRSAKey";
-      btnImportRSAKey.Size = new Size(95, 29);
-      btnImportRSAKey.TabIndex = 13;
-      btnImportRSAKey.Text = "Import Key";
-      btnImportRSAKey.UseVisualStyleBackColor = true;
+      btnImportPublicKey.Font = new Font("Segoe UI", 12F);
+      btnImportPublicKey.Location = new Point(387, 89);
+      btnImportPublicKey.Name = "btnImportPublicKey";
+      btnImportPublicKey.Size = new Size(95, 29);
+      btnImportPublicKey.TabIndex = 13;
+      btnImportPublicKey.Text = "Import Key";
+      btnImportPublicKey.UseVisualStyleBackColor = true;
       // 
       // btnGenerateRSAKey
       // 
@@ -210,15 +214,15 @@
       lblRSAPadding.TabIndex = 24;
       lblRSAPadding.Text = "RSA Padding";
       // 
-      // txtImportedRSAKeyName
+      // txtImportedPublicKeyName
       // 
-      txtImportedRSAKeyName.BorderStyle = BorderStyle.FixedSingle;
-      txtImportedRSAKeyName.Enabled = false;
-      txtImportedRSAKeyName.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-      txtImportedRSAKeyName.Location = new Point(488, 89);
-      txtImportedRSAKeyName.Name = "txtImportedRSAKeyName";
-      txtImportedRSAKeyName.Size = new Size(157, 29);
-      txtImportedRSAKeyName.TabIndex = 25;
+      txtImportedPublicKeyName.BorderStyle = BorderStyle.FixedSingle;
+      txtImportedPublicKeyName.Enabled = false;
+      txtImportedPublicKeyName.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      txtImportedPublicKeyName.Location = new Point(488, 89);
+      txtImportedPublicKeyName.Name = "txtImportedPublicKeyName";
+      txtImportedPublicKeyName.Size = new Size(157, 29);
+      txtImportedPublicKeyName.TabIndex = 25;
       // 
       // lblRSAKeySize
       // 
@@ -245,7 +249,7 @@
       // 
       cbUseMultithreading.AutoSize = true;
       cbUseMultithreading.Font = new Font("Segoe UI", 12F);
-      cbUseMultithreading.Location = new Point(513, 142);
+      cbUseMultithreading.Location = new Point(513, 283);
       cbUseMultithreading.Name = "cbUseMultithreading";
       cbUseMultithreading.Size = new Size(132, 25);
       cbUseMultithreading.TabIndex = 28;
@@ -365,11 +369,53 @@
       cbHashAlgorithm.Size = new Size(157, 29);
       cbHashAlgorithm.TabIndex = 39;
       // 
+      // btnImportPrivateKey
+      // 
+      btnImportPrivateKey.Font = new Font("Segoe UI", 12F);
+      btnImportPrivateKey.Location = new Point(388, 139);
+      btnImportPrivateKey.Name = "btnImportPrivateKey";
+      btnImportPrivateKey.Size = new Size(95, 29);
+      btnImportPrivateKey.TabIndex = 40;
+      btnImportPrivateKey.Text = "Import Key";
+      btnImportPrivateKey.UseVisualStyleBackColor = true;
+      // 
+      // label1
+      // 
+      label1.AutoSize = true;
+      label1.Location = new Point(488, 74);
+      label1.Name = "label1";
+      label1.Size = new Size(101, 15);
+      label1.TabIndex = 41;
+      label1.Text = "Import Public Key";
+      // 
+      // txtImportedPrivateKeyName
+      // 
+      txtImportedPrivateKeyName.BorderStyle = BorderStyle.FixedSingle;
+      txtImportedPrivateKeyName.Enabled = false;
+      txtImportedPrivateKeyName.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      txtImportedPrivateKeyName.Location = new Point(488, 140);
+      txtImportedPrivateKeyName.Name = "txtImportedPrivateKeyName";
+      txtImportedPrivateKeyName.Size = new Size(157, 29);
+      txtImportedPrivateKeyName.TabIndex = 42;
+      // 
+      // label2
+      // 
+      label2.AutoSize = true;
+      label2.Location = new Point(488, 122);
+      label2.Name = "label2";
+      label2.Size = new Size(104, 15);
+      label2.TabIndex = 43;
+      label2.Text = "Import Private Key";
+      // 
       // RSAForm
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       ClientSize = new Size(657, 445);
+      Controls.Add(label2);
+      Controls.Add(txtImportedPrivateKeyName);
+      Controls.Add(label1);
+      Controls.Add(btnImportPrivateKey);
       Controls.Add(cbHashAlgorithm);
       Controls.Add(lblHashAlgorithm);
       Controls.Add(cbAESPadding);
@@ -384,7 +430,7 @@
       Controls.Add(cbUseMultithreading);
       Controls.Add(cbRSAKeySize);
       Controls.Add(lblRSAKeySize);
-      Controls.Add(txtImportedRSAKeyName);
+      Controls.Add(txtImportedPublicKeyName);
       Controls.Add(lblRSAPadding);
       Controls.Add(cbRSAPadding);
       Controls.Add(btnDecrypt);
@@ -395,7 +441,7 @@
       Controls.Add(progressBar);
       Controls.Add(btnBrowse);
       Controls.Add(btnGenerateRSAKey);
-      Controls.Add(btnImportRSAKey);
+      Controls.Add(btnImportPublicKey);
       Controls.Add(cbDataFormat);
       Controls.Add(txtDataOrFilePath);
       Controls.Add(lblDataOrFilePath);
@@ -415,7 +461,7 @@
     private TextBox txtDataOrFilePath;
     private Label lblDataOrFilePath;
     private Label lblDataFormat;
-    private Button btnImportRSAKey;
+    private Button btnImportPublicKey;
     private Button btnGenerateRSAKey;
     private Button btnBrowse;
     private ProgressBar progressBar;
@@ -426,7 +472,7 @@
     private Button btnDecrypt;
     private ComboBox cbRSAPadding;
     private Label lblRSAPadding;
-    private TextBox txtImportedRSAKeyName;
+    private TextBox txtImportedPublicKeyName;
     private Label lblRSAKeySize;
     private ComboBox cbRSAKeySize;
     private System.Windows.Forms.Timer timer;
@@ -442,5 +488,9 @@
     private ComboBox cbAESPadding;
     private Label lblHashAlgorithm;
     private ComboBox cbHashAlgorithm;
+    private Button btnImportPrivateKey;
+    private Label label1;
+    private TextBox txtImportedPrivateKeyName;
+    private Label label2;
   }
 }
