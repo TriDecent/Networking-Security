@@ -2,6 +2,7 @@ using CryptographicApp.CryptographicCores.Asymmetric;
 using CryptographicApp.CryptographicCores.HashGenerators;
 using CryptographicApp.CryptographicCores.Hybrid;
 using CryptographicApp.CryptographicCores.KeysRepository;
+using CryptographicApp.CryptographicCores.MetadataHeaderExtractor;
 using CryptographicApp.CryptographicCores.Symmetric;
 using CryptographicApp.Enums;
 using CryptographicApp.Models;
@@ -109,9 +110,11 @@ public partial class RSAForm : Form
     _cbHashAlgorithm.SelectedValueChanged += (s, e) => OnSelectedHashAlgorithmChanged();
 
     _btnGenerateAESKey.Click += (s, e) => OnProcessStart();
+    _btnHybridEncrypt.Click += (s, e) => OnProcessStart();
 
     _btnGenerateAESKey.Click += async (s, e) => await OnGenerateAESKeyClickedAsync();
     _btnImportAESKey.Click += (s, e) => OnImportAESKeyClicked();
+    _btnHybridEncrypt.Click += async (s, e) => await OnHybridEncryptClickedAsync();
   }
 
   private void OnSelectedDataFormatChanged()
@@ -289,6 +292,23 @@ public partial class RSAForm : Form
     ToggleButton(_btnRSADecrypt);
   }
 
+  private async Task OnHybridEncryptClickedAsync()
+  {
+    if (!AreInputsForHybridValid())
+    {
+      MessageNotifier.ShowError(
+        "Data or file path and imported key cannot be empty.");
+      return;
+    }
+
+    using var rsa = RSA.Create();
+    using var aes = Aes.Create();
+
+    ToggleButton(_btnHybridEncrypt);
+    await PerformWithProgress(() => PerformHybridEncryptionAsync(rsa, aes));
+    ToggleButton(_btnHybridEncrypt);
+  }
+
   private async Task PerformWithProgress(Func<Task> runCryptographicOperation)
   {
     ToggleProgress(true);
@@ -302,7 +322,7 @@ public partial class RSAForm : Form
       if (selectedDataFormatCache != DataFormat.File) return;
 
       if (runCryptographicOperation.Method.Name.Contains(
-        "Encryption", StringComparison.OrdinalIgnoreCase))
+        "Encrypt", StringComparison.OrdinalIgnoreCase))
       {
         MessageNotifier.ShowSuccess(
           $"Your encrypted files has been saved to {ENCRYPTED_OUTPUT_DIRECTORY} folder");
@@ -328,10 +348,52 @@ public partial class RSAForm : Form
     }
   }
 
-  private Task PerformEncryptionAsync()
+  private Task PerformHybridEncryptionAsync(RSA rsa, Aes aes)
   {
-    using var rsa = RSA.Create();
-    var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedRSAKeyFilePath);
+    var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
+    var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
+
+    var rsaKey = new RSAKey(publicKeyPem, privateKeyPem);
+    var aesKey = _keyStorage.ReadAESKey(_importedAESKeyFilePath);
+
+    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
+
+    var hashGenerator = DetermineHashGenerator(_selectedHashAlgorithm);
+    var metadataHeader = new HeaderMetadataHandler(hashGenerator, rsaEncryption);
+
+    var aesEncryption = new AESEncryption(aes);
+    aesEncryption.SetPadding(_selectedAESPadding);
+
+    var hybridEncryption = new HybridEncryption(
+      rsaEncryption, aesEncryption, metadataHeader
+    );
+
+    return _cbUseMultithreading.Checked
+      ? Task.Run(() => HybridEncryptData(hybridEncryption, rsaKey, aesKey))
+      : Task.CompletedTask.ContinueWith(_ =>
+          HybridEncryptData(hybridEncryption, rsaKey, aesKey));
+  }
+
+  private async Task HybridEncryptData(
+    HybridEncryption hybridEncryption, RSAKey rsaKey, AESKey aesKey)
+      => await hybridEncryption.EncryptFileAsync(
+        inputFilePath: _txtDataOrFilePath.Text,
+        outputFilePath: GetEncryptedFilePath(_txtDataOrFilePath.Text),
+        rsaKey,
+        aesKey);
+
+  private static IHashGenerator DetermineHashGenerator(Enums.HashAlgorithm hashAlgorithm)
+  {
+    if (hashAlgorithm == Enums.HashAlgorithm.MD5) return new MD5HashGenerator();
+    if (hashAlgorithm == Enums.HashAlgorithm.SHA1) return new SHA1HashGenerator();
+    if (hashAlgorithm == Enums.HashAlgorithm.SHA3_256) return new SHA3_512HashGenerator();
+
+    return new SHA256HashGenerator();
+  }
+
+  private Task PerformRSAEncryptionAsync(RSA rsa)
+  {
+    var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
     var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
 
     return _cbUseMultithreading.Checked
