@@ -132,7 +132,9 @@ public partial class RSAForm : Form
     var integrityVerifier = CryptoComponentFactory.CreateIntegrityVerifier(
       rsa, aes, _selectedRSAPadding, _selectedHashAlgorithm);
 
-    var rsaKey = LoadRSAKey();
+    var rsaKey = _keyStorage.ReadRSAKey(
+      _importedPublicKeyFilePath,
+      _importedPrivateKeyFilePath);
 
     bool isIntact = false;
     try
@@ -427,7 +429,11 @@ public partial class RSAForm : Form
 
   private Task PerformHybridEncryption(RSA rsa, Aes aes)
   {
-    var (rsaKey, aesKey) = LoadEncryptionKeys();
+    var (rsaKey, aesKey) = _keyStorage.ReadEncryptionKeys(
+      _importedPublicKeyFilePath,
+      _importedPrivateKeyFilePath,
+      _importedAESKeyFilePath
+    );
 
     var hybridEncryption = CryptoComponentFactory.CreateHybridEncryption(
       rsa, aes, _selectedRSAPadding, _selectedAESPadding, _selectedHashAlgorithm
@@ -438,7 +444,10 @@ public partial class RSAForm : Form
 
   private Task PerformHybridDecryption(RSA rsa, Aes aes)
   {
-    var rsaKey = LoadRSAKey();
+    var rsaKey = _keyStorage.ReadRSAKey(
+      _importedPublicKeyFilePath,
+      _importedPrivateKeyFilePath
+    );
 
     var hybridEncryption = CryptoComponentFactory.CreateHybridEncryption(
       rsa, aes, _selectedRSAPadding, _selectedAESPadding, _selectedHashAlgorithm
@@ -525,22 +534,6 @@ public partial class RSAForm : Form
           privateKeyPem,
           _selectedDataFormat));
     }
-  }
-
-  private (RSAKey rsaKey, AESKey aesKey) LoadEncryptionKeys()
-  {
-    var rsaKey = LoadRSAKey();
-    var aesKey = _keyStorage.ReadAESKey(_importedAESKeyFilePath);
-
-    return (rsaKey, aesKey);
-  }
-
-  private RSAKey LoadRSAKey()
-  {
-    var publicKey = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
-    var privateKey = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
-
-    return new RSAKey(publicKey, privateKey);
   }
 
   private static string GetEncryptedFilePath(string inputPath)
