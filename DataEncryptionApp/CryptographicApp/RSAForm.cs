@@ -124,33 +124,30 @@ public partial class RSAForm : Form
     _btnCheckIntegrity.Click += async (s, e) => await OnIntegrityCheckClicked();
   }
 
-  // TODO: refactor creating HeaderMetadataHandler and loading keys in methods
-  // TODO: add try catch for this method too
   private async Task OnIntegrityCheckClicked()
   {
     using var rsa = RSA.Create();
     using var aes = Aes.Create();
-    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
-    var hashGenerator = DetermineHashGenerator(_selectedHashAlgorithm);
-    var headerHandler = new HeaderMetadataHandler(hashGenerator, rsaEncryption);
 
-    var publicKey = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
-    var privateKey = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
+    var integrityVerifier = CryptoComponentFactory.CreateIntegrityVerifier(
+      rsa, aes, _selectedRSAPadding, _selectedHashAlgorithm);
 
-    var rsaKey = new RSAKey(publicKey, privateKey);
-
-    var aesEncryption = new AESEncryption(aes);
-    var integrityVerifier = new FileIntegrityVerifier(
-      headerHandler, rsaEncryption, aesEncryption, hashGenerator);
+    var rsaKey = LoadRSAKey();
 
     bool isIntact = false;
     try
     {
       isIntact = await integrityVerifier.Verify(_txtDataOrFilePath.Text, rsaKey);
     }
+    catch (CryptographicException ex)
+    {
+      ToggleProgress(false);
+      HandleCryptographicException(ex);
+    }
     catch (Exception ex)
     {
-      MessageNotifier.ShowError(ex.Message);
+      ToggleProgress(false);
+      MessageNotifier.ShowError($"An error occurred: {ex.Message}");
     }
 
     if (isIntact)
@@ -430,22 +427,10 @@ public partial class RSAForm : Form
 
   private Task PerformHybridEncryption(RSA rsa, Aes aes)
   {
-    var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
-    var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
+    var (rsaKey, aesKey) = LoadEncryptionKeys();
 
-    var rsaKey = new RSAKey(publicKeyPem, privateKeyPem);
-    var aesKey = _keyStorage.ReadAESKey(_importedAESKeyFilePath);
-
-    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
-
-    var hashGenerator = DetermineHashGenerator(_selectedHashAlgorithm);
-    var metadataHeader = new HeaderMetadataHandler(hashGenerator, rsaEncryption);
-
-    var aesEncryption = new AESEncryption(aes);
-    aesEncryption.SetPadding(_selectedAESPadding);
-
-    var hybridEncryption = new HybridEncryption(
-      rsaEncryption, aesEncryption, metadataHeader
+    var hybridEncryption = CryptoComponentFactory.CreateHybridEncryption(
+      rsa, aes, _selectedRSAPadding, _selectedAESPadding, _selectedHashAlgorithm
     );
 
     return HybridEncryptData(hybridEncryption, rsaKey, aesKey);
@@ -453,21 +438,10 @@ public partial class RSAForm : Form
 
   private Task PerformHybridDecryption(RSA rsa, Aes aes)
   {
-    var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
-    var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
+    var rsaKey = LoadRSAKey();
 
-    var rsaKey = new RSAKey(publicKeyPem, privateKeyPem);
-
-    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
-
-    var hashGenerator = DetermineHashGenerator(_selectedHashAlgorithm);
-    var metadataHeader = new HeaderMetadataHandler(hashGenerator, rsaEncryption);
-
-    var aesEncryption = new AESEncryption(aes);
-    aesEncryption.SetPadding(_selectedAESPadding);
-
-    var hybridEncryption = new HybridEncryption(
-      rsaEncryption, aesEncryption, metadataHeader
+    var hybridEncryption = CryptoComponentFactory.CreateHybridEncryption(
+      rsa, aes, _selectedRSAPadding, _selectedAESPadding, _selectedHashAlgorithm
     );
 
     return HybridDecryptData(hybridEncryption, rsaKey);
@@ -488,19 +462,12 @@ public partial class RSAForm : Form
       outputFilePath: GetDecryptedFilePath(_txtDataOrFilePath.Text),
       rsaKey);
 
-  private static IHashGenerator DetermineHashGenerator(Enums.HashAlgorithm hashAlgorithm)
-  {
-    if (hashAlgorithm == Enums.HashAlgorithm.MD5) return new MD5HashGenerator();
-    if (hashAlgorithm == Enums.HashAlgorithm.SHA1) return new SHA1HashGenerator();
-    if (hashAlgorithm == Enums.HashAlgorithm.SHA3_256) return new SHA3_512HashGenerator();
-
-    return new SHA256HashGenerator();
-  }
 
   private Task PerformRSAEncryptionAsync(RSA rsa)
   {
     var publicKeyPem = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
-    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
+    var rsaEncryption = CryptoComponentFactory.CreateRSAEncryption(
+      rsa, _selectedRSAPadding);
 
     if (_cbUseMultithreading.Checked)
       return Task.Run(() => EncryptData(rsaEncryption, publicKeyPem));
@@ -512,7 +479,8 @@ public partial class RSAForm : Form
   private Task PerformRSADecryptionAsync(RSA rsa)
   {
     var privateKeyPem = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
-    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
+    var rsaEncryption = CryptoComponentFactory.CreateRSAEncryption(
+      rsa, _selectedRSAPadding);
 
     if (_cbUseMultithreading.Checked)
       return Task.Run(() => DecryptData(rsaEncryption, privateKeyPem));
@@ -557,6 +525,22 @@ public partial class RSAForm : Form
           privateKeyPem,
           _selectedDataFormat));
     }
+  }
+
+  private (RSAKey rsaKey, AESKey aesKey) LoadEncryptionKeys()
+  {
+    var rsaKey = LoadRSAKey();
+    var aesKey = _keyStorage.ReadAESKey(_importedAESKeyFilePath);
+
+    return (rsaKey, aesKey);
+  }
+
+  private RSAKey LoadRSAKey()
+  {
+    var publicKey = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
+    var privateKey = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
+
+    return new RSAKey(publicKey, privateKey);
   }
 
   private static string GetEncryptedFilePath(string inputPath)
