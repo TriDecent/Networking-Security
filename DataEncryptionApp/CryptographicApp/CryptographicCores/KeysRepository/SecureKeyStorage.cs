@@ -17,9 +17,6 @@ public partial class SecureKeyStorage
   public const string RSA_KEYS_FOLDER = "RSAKeys";
   public const string AES_KEYS_FOLDER = "AESKeys";
 
-  public string ReadSingleRSAKey(string filePath)
-  => File.ReadAllText(filePath);
-
   public void SaveKeyPair(RSAKey keyPair)
   {
     var directory = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath)!, RSA_KEYS_FOLDER);
@@ -58,6 +55,27 @@ public partial class SecureKeyStorage
       """;
 
     Write(Path.Combine(directory, $"aes_key{newNumber}.key"), content);
+  }
+
+  public (RSAKey rsaKey, AESKey aesKey) ReadEncryptionKeys(
+    string publicKeyPath,
+    string privateKeyPath,
+    string aesKeyPath)
+  {
+    var rsaKey = ReadRSAKey(publicKeyPath, privateKeyPath);
+    var aesKey = ReadAESKey(aesKeyPath);
+
+    return (rsaKey, aesKey);
+  }
+  public string ReadSingleRSAKey(string filePath)
+    => File.ReadAllText(filePath);
+
+  public RSAKey ReadRSAKey(string publicKeyPath, string privateKeyPath)
+  {
+    var publicKey = ReadSingleRSAKey(publicKeyPath);
+    var privateKey = ReadSingleRSAKey(privateKeyPath);
+
+    return new RSAKey(publicKey, privateKey);
   }
 
   public AESKey ReadAESKey(string filePath)
