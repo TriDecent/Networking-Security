@@ -1,6 +1,7 @@
 using CryptographicApp.CryptographicCores.Asymmetric;
 using CryptographicApp.CryptographicCores.HashGenerators;
 using CryptographicApp.CryptographicCores.Hybrid;
+using CryptographicApp.CryptographicCores.IntegrityVerifier;
 using CryptographicApp.CryptographicCores.KeysRepository;
 using CryptographicApp.CryptographicCores.MetadataHeaderExtractor;
 using CryptographicApp.CryptographicCores.Symmetric;
@@ -24,6 +25,7 @@ public partial class RSAForm : Form
   private readonly TextBox _txtImportedPublicKeyName, _txtImportedPrivateKeyName;
   private readonly Button _btnHybridEncrypt, _btnHybridDecrypt;
   private readonly Button _btnGenerateAESKey, _btnImportAESKey;
+  private readonly Button _btnCheckIntegrity;
   private readonly TextBox _txtImportedAESKeyName;
   private readonly ComboBox _cbAESPadding, _cbAESKeySize, _cbHashAlgorithm;
   private readonly CheckBox _cbUseMultithreading;
@@ -67,6 +69,7 @@ public partial class RSAForm : Form
     _btnHybridDecrypt = btnHybridDecrypt;
     _btnGenerateAESKey = btnGenerateAESKey;
     _btnImportAESKey = btnImportAESKey;
+    _btnCheckIntegrity = btnCheckIntegrity;
     _cbAESPadding = cbAESPadding;
     _cbAESKeySize = cbAESKeySize;
     _txtImportedAESKeyName = txtImportedAESKeyName;
@@ -117,6 +120,46 @@ public partial class RSAForm : Form
     _btnImportAESKey.Click += (s, e) => OnImportAESKeyClicked();
     _btnHybridEncrypt.Click += async (s, e) => await OnHybridEncryptClickedAsync();
     _btnHybridDecrypt.Click += async (s, e) => await OnHybridDecryptClickedAsync();
+
+    _btnCheckIntegrity.Click += async (s, e) => await OnIntegrityCheckClicked();
+  }
+
+  // TODO: refactor creating HeaderMetadataHandler and loading keys in methods
+  // TODO: add try catch for this method too
+  private async Task OnIntegrityCheckClicked()
+  {
+    using var rsa = RSA.Create();
+    using var aes = Aes.Create();
+    var rsaEncryption = new RSAEncryption(rsa, _selectedRSAPadding);
+    var hashGenerator = DetermineHashGenerator(_selectedHashAlgorithm);
+    var headerHandler = new HeaderMetadataHandler(hashGenerator, rsaEncryption);
+
+    var publicKey = _keyStorage.ReadSingleRSAKey(_importedPublicKeyFilePath);
+    var privateKey = _keyStorage.ReadSingleRSAKey(_importedPrivateKeyFilePath);
+
+    var rsaKey = new RSAKey(publicKey, privateKey);
+
+    var aesEncryption = new AESEncryption(aes);
+    var integrityVerifier = new FileIntegrityVerifier(
+      headerHandler, rsaEncryption, aesEncryption, hashGenerator);
+
+    bool isIntact = false;
+    try
+    {
+      isIntact = await integrityVerifier.Verify(_txtDataOrFilePath.Text, rsaKey);
+    }
+    catch (Exception ex)
+    {
+      MessageNotifier.ShowError(ex.Message);
+    }
+
+    if (isIntact)
+    {
+      MessageBox.Show("File integrity verified and intact.");
+      return;
+    }
+
+    MessageBox.Show("File integrity check failed. Corruption detected..");
   }
 
   private void OnSelectedDataFormatChanged()

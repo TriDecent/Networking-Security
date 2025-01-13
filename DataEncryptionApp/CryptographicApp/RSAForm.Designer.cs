@@ -28,7 +28,6 @@
     /// </summary>
     private void InitializeComponent()
     {
-      components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RSAForm));
       cbDataFormat = new ComboBox();
       txtDataOrFilePath = new TextBox();
@@ -48,7 +47,6 @@
       txtImportedPublicKeyName = new TextBox();
       lblRSAKeySize = new Label();
       cbRSAKeySize = new ComboBox();
-      timer = new System.Windows.Forms.Timer(components);
       cbUseMultithreading = new CheckBox();
       btnHybridEncrypt = new Button();
       btnHybridDecrypt = new Button();
@@ -65,6 +63,7 @@
       label1 = new Label();
       txtImportedPrivateKeyName = new TextBox();
       label2 = new Label();
+      btnCheckIntegrity = new Button();
       SuspendLayout();
       // 
       // cbDataFormat
@@ -148,7 +147,7 @@
       // 
       lblTimeTook.AutoSize = true;
       lblTimeTook.Font = new Font("Segoe UI", 12F);
-      lblTimeTook.Location = new Point(8, 408);
+      lblTimeTook.Location = new Point(12, 443);
       lblTimeTook.Name = "lblTimeTook";
       lblTimeTook.Size = new Size(95, 21);
       lblTimeTook.TabIndex = 18;
@@ -259,7 +258,7 @@
       // btnHybridEncrypt
       // 
       btnHybridEncrypt.Font = new Font("Segoe UI", 12F);
-      btnHybridEncrypt.Location = new Point(203, 404);
+      btnHybridEncrypt.Location = new Point(261, 439);
       btnHybridEncrypt.Name = "btnHybridEncrypt";
       btnHybridEncrypt.Size = new Size(122, 29);
       btnHybridEncrypt.TabIndex = 29;
@@ -269,7 +268,7 @@
       // btnHybridDecrypt
       // 
       btnHybridDecrypt.Font = new Font("Segoe UI", 12F);
-      btnHybridDecrypt.Location = new Point(340, 404);
+      btnHybridDecrypt.Location = new Point(389, 439);
       btnHybridDecrypt.Name = "btnHybridDecrypt";
       btnHybridDecrypt.Size = new Size(128, 29);
       btnHybridDecrypt.TabIndex = 30;
@@ -407,11 +406,22 @@
       label2.TabIndex = 43;
       label2.Text = "Import Private Key";
       // 
+      // btnCheckIntegrity
+      // 
+      btnCheckIntegrity.Font = new Font("Segoe UI", 12F);
+      btnCheckIntegrity.Location = new Point(523, 439);
+      btnCheckIntegrity.Name = "btnCheckIntegrity";
+      btnCheckIntegrity.Size = new Size(122, 29);
+      btnCheckIntegrity.TabIndex = 44;
+      btnCheckIntegrity.Text = "Integrity Check";
+      btnCheckIntegrity.UseVisualStyleBackColor = true;
+      // 
       // RSAForm
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
-      ClientSize = new Size(657, 445);
+      ClientSize = new Size(657, 474);
+      Controls.Add(btnCheckIntegrity);
       Controls.Add(label2);
       Controls.Add(txtImportedPrivateKeyName);
       Controls.Add(label1);
@@ -475,7 +485,6 @@
     private TextBox txtImportedPublicKeyName;
     private Label lblRSAKeySize;
     private ComboBox cbRSAKeySize;
-    private System.Windows.Forms.Timer timer;
     private CheckBox cbUseMultithreading;
     private Button btnHybridEncrypt;
     private Button btnHybridDecrypt;
@@ -492,5 +501,6 @@
     private Label label1;
     private TextBox txtImportedPrivateKeyName;
     private Label label2;
+    private Button btnCheckIntegrity;
   }
 }
