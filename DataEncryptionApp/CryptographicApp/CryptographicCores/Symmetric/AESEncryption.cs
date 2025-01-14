@@ -23,26 +23,63 @@ public class AESEncryption(Aes aes) : IAes
   public async Task EncryptFileAsync(
     string inputFilePath, string outputFilePath, AESKey aesKey)
   {
-    var bytes = await File.ReadAllBytesAsync(inputFilePath);
     var keyBytes = aesKey.Key.Base64ToBytes();
     var ivBytes = aesKey.IV.Base64ToBytes();
 
     using var encryptor = _aes.CreateEncryptor(keyBytes, ivBytes);
-    var encryptedBytes = encryptor.TransformFinalBlock(bytes, 0, bytes.Length);
+    using var inputStream = File.OpenRead(inputFilePath);
+    using var outputStream = File.Create(outputFilePath);
+    using var cryptoStream = new CryptoStream(
+      outputStream,
+      encryptor,
+      CryptoStreamMode.Write
+    );
 
-    await File.WriteAllBytesAsync(outputFilePath, encryptedBytes);
+    await inputStream.CopyToAsync(cryptoStream);
+    await cryptoStream.FlushFinalBlockAsync();
   }
 
   public async Task DecryptFileAsync(
     string inputFilePath, string outputFilePath, AESKey aesKey)
   {
-    var bytes = await File.ReadAllBytesAsync(inputFilePath);
     var keyBytes = aesKey.Key.Base64ToBytes();
     var ivBytes = aesKey.IV.Base64ToBytes();
 
     using var decryptor = _aes.CreateDecryptor(keyBytes, ivBytes);
-    var decryptedBytes = decryptor.TransformFinalBlock(bytes, 0, bytes.Length);
+    using var inputStream = File.OpenRead(inputFilePath);
+    using var outputStream = File.Create(outputFilePath);
+    using var cryptoStream = new CryptoStream(
+      inputStream,
+      decryptor,
+      CryptoStreamMode.Read
+    );
 
-    await File.WriteAllBytesAsync(outputFilePath, decryptedBytes);
+    await cryptoStream.CopyToAsync(outputStream);
   }
 }
+
+// public async Task EncryptFileAsync(
+//   string inputFilePath, string outputFilePath, AESKey aesKey)
+// {
+//   var bytes = await File.ReadAllBytesAsync(inputFilePath);
+//   var keyBytes = aesKey.Key.Base64ToBytes();
+//   var ivBytes = aesKey.IV.Base64ToBytes();
+
+//   using var encryptor = _aes.CreateEncryptor(keyBytes, ivBytes);
+//   var encryptedBytes = encryptor.TransformFinalBlock(bytes, 0, bytes.Length);
+
+//   await File.WriteAllBytesAsync(outputFilePath, encryptedBytes);
+// }
+
+// public async Task DecryptFileAsync(
+//   string inputFilePath, string outputFilePath, AESKey aesKey)
+// {
+//   var bytes = await File.ReadAllBytesAsync(inputFilePath);
+//   var keyBytes = aesKey.Key.Base64ToBytes();
+//   var ivBytes = aesKey.IV.Base64ToBytes();
+
+//   using var decryptor = _aes.CreateDecryptor(keyBytes, ivBytes);
+//   var decryptedBytes = decryptor.TransformFinalBlock(bytes, 0, bytes.Length);
+
+//   await File.WriteAllBytesAsync(outputFilePath, decryptedBytes);
+// }
