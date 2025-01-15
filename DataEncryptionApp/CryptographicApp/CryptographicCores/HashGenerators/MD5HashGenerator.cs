@@ -19,20 +19,27 @@ public class MD5HashGenerator : IHashGenerator
   {
     var inputBytes = data.StringToBytes();
     var hashBytes = MD5.HashData(inputBytes);
-    return Convert.ToHexString(hashBytes).Replace("-", "");
+    return hashBytes.ToHex().Replace("-", string.Empty);
   }
 
   private static string GenerateHashFromHex(string data)
   {
     var inputBytes = data.HexToBytes();
     var hashBytes = MD5.HashData(inputBytes);
-    return Convert.ToHexString(hashBytes).Replace("-", "");
+    return hashBytes.ToHex().Replace("-", string.Empty);
   }
 
   private static string GenerateHashFromFile(string filePath)
   {
-    var inputBytes = File.ReadAllBytes(filePath);
-    var hashBytes = MD5.HashData(inputBytes);
-    return Convert.ToHexString(hashBytes).Replace("-", "");
+    using var inputStream = File.OpenRead(filePath);
+    var hashBytes = MD5.HashData(inputStream);
+    return hashBytes.ToHex().Replace("-", string.Empty);
+  }
+
+  public string GenerateHash(Stream stream)
+  {
+    var hashBytes = MD5.HashData(stream);
+
+    return hashBytes.ToHex().Replace("", string.Empty);
   }
 }

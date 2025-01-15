@@ -17,20 +17,26 @@ internal class SHA1HashGenerator : IHashGenerator
 
   private static string GenerateHashFromText(string data)
   {
-    var hash = SHA1.HashData(data.StringToBytes());
-    return Convert.ToHexString(hash).Replace("-", string.Empty);
+    var hashBytes = SHA1.HashData(data.StringToBytes());
+    return hashBytes.ToHex().Replace("-", string.Empty);
   }
 
   private static string GenerateHashFromHex(string data)
   {
-    var hash = SHA1.HashData(data.HexToBytes());
-    return Convert.ToHexString(hash).Replace("-", string.Empty);
+    var hashBytes = SHA1.HashData(data.HexToBytes());
+    return hashBytes.ToHex().Replace("-", string.Empty);
   }
 
   private static string GenerateHashFromFile(string filePath)
   {
     using var stream = File.OpenRead(filePath);
-    var hash = SHA1.HashData(stream);
-    return Convert.ToHexString(hash).Replace("-", string.Empty);
+    var hashBytes = SHA1.HashData(stream);
+    return hashBytes.ToHex().Replace("-", string.Empty);
+  }
+
+  public string GenerateHash(Stream stream)
+  {
+    var hashBytes = SHA1.HashData(stream);
+    return hashBytes.ToHex().Replace("-", string.Empty);
   }
 }

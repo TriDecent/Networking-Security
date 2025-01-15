@@ -18,21 +18,27 @@ internal class SHA3_512HashGenerator : IHashGenerator
   private static string GenerateHashFromText(string data)
   {
     var bytes = data.StringToBytes();
-    var hash = Sha3.Sha3512().ComputeHash(bytes);
-    return Convert.ToHexString(hash).Replace("-", string.Empty);
+    var hashBytes = Sha3.Sha3512().ComputeHash(bytes);
+    return hashBytes.ToHex().Replace("-", string.Empty);
   }
 
   private static string GenerateHashFromHex(string data)
   {
     var bytes = data.HexToBytes();
-    var hash = Sha3.Sha3512().ComputeHash(bytes);
-    return Convert.ToHexString(hash).Replace("-", string.Empty);
+    var hashBytes = Sha3.Sha3512().ComputeHash(bytes);
+    return hashBytes.ToHex().Replace("-", string.Empty);
   }
 
   private static string GenerateHashFromFile(string filePath)
   {
-    var bytes = File.ReadAllBytes(filePath);
-    var hash = Sha3.Sha3512().ComputeHash(bytes);
-    return Convert.ToHexString(hash).Replace("-", string.Empty);
+    using var fileStream = File.OpenRead(filePath);
+    var hashBytes = Sha3.Sha3512().ComputeHash(fileStream);
+    return hashBytes.ToHex().Replace("-", string.Empty);
+  }
+
+  public string GenerateHash(Stream stream)
+  {
+    var hashBytes = Sha3.Sha3512().ComputeHash(stream);
+    return hashBytes.ToHex().Replace("-", string.Empty);
   }
 }
