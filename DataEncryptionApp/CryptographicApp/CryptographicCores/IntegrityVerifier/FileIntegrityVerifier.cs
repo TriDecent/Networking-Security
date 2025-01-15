@@ -35,28 +35,27 @@ public class FileIntegrityVerifier(
 
     _headerHandler.SkipHeader(fileStream, headerMetadata);
 
-    var tempFilePath = Path.GetTempFileName();
-    using var tempStream1 = new FileStream(
-      tempFilePath,
+    var tempFilePath1 = Path.GetTempFileName();
+    var tempFilePath2 = Path.GetTempFileName();
+    using var tempStream = new FileStream(
+      tempFilePath1,
       FileMode.Open,
       FileAccess.Write,
       FileShare.ReadWrite | FileShare.Delete
     );
 
-    await fileStream.CopyToAsync(tempStream1);
+    await fileStream.CopyToAsync(tempStream);
 
-    // temporary
-    await tempStream1.FlushAsync();
-    tempStream1.Close();
-    // delete this after implementing hash generators using stream
-    // temporary
+    await tempStream.FlushAsync();
+    tempStream.Close();
 
     await _aes.DecryptFileAsync(
-      tempFilePath, tempFilePath, new AESKey(aesKey, aesIV));
+      tempFilePath1, tempFilePath2, new AESKey(aesKey, aesIV));
 
-    var computedHash = _hashGenerator.GenerateHash(tempFilePath, DataFormat.File);
+    var computedHash = _hashGenerator.GenerateHash(tempFilePath2, DataFormat.File);
 
-    File.Delete(tempFilePath);
+    File.Delete(tempFilePath1);
+    File.Delete(tempFilePath2);
 
     return originalHash == computedHash;
   }

@@ -1,9 +1,6 @@
 using CryptographicApp.CryptographicCores.Asymmetric;
-using CryptographicApp.CryptographicCores.HashGenerators;
 using CryptographicApp.CryptographicCores.Hybrid;
-using CryptographicApp.CryptographicCores.IntegrityVerifier;
 using CryptographicApp.CryptographicCores.KeysRepository;
-using CryptographicApp.CryptographicCores.MetadataHeaderExtractor;
 using CryptographicApp.CryptographicCores.Symmetric;
 using CryptographicApp.Enums;
 using CryptographicApp.Models;
@@ -129,17 +126,22 @@ public partial class RSAForm : Form
     using var rsa = RSA.Create();
     using var aes = Aes.Create();
 
-    var integrityVerifier = CryptoComponentFactory.CreateIntegrityVerifier(
-      rsa, aes, _selectedRSAPadding, _selectedHashAlgorithm);
-
-    var rsaKey = _keyStorage.ReadRSAKey(
-      _importedPublicKeyFilePath,
-      _importedPrivateKeyFilePath);
-
-    bool isIntact = false;
     try
     {
+      bool isIntact = false;
+
+      var integrityVerifier = CryptoComponentFactory.CreateIntegrityVerifier(
+      rsa, aes, _selectedRSAPadding, _selectedHashAlgorithm);
+      var rsaKey = _keyStorage.ReadRSAKey(
+        _importedPublicKeyFilePath,
+        _importedPrivateKeyFilePath);
       isIntact = await integrityVerifier.Verify(_txtDataOrFilePath.Text, rsaKey);
+
+      var message = isIntact ?
+        "File integrity verified and intact." :
+        "File integrity check failed. Corruption detected.";
+
+      MessageNotifier.ShowSuccess(message);
     }
     catch (CryptographicException ex)
     {
@@ -151,14 +153,6 @@ public partial class RSAForm : Form
       ToggleProgress(false);
       MessageNotifier.ShowError($"An error occurred: {ex.Message}");
     }
-
-    if (isIntact)
-    {
-      MessageBox.Show("File integrity verified and intact.");
-      return;
-    }
-
-    MessageBox.Show("File integrity check failed. Corruption detected..");
   }
 
   private void OnSelectedDataFormatChanged()
